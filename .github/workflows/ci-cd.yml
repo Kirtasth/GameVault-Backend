@@ -101,3 +101,4 @@ jobs:
           deploy-hook: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
           image-url: ${{ secrets.DOCKERHUB_USERNAME }}/gamevault-backend:latest
           wait-for-deployment: true
+          render-api-key: ${{ secrets.RENDER_API_KEY }}
