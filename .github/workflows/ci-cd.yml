@@ -37,6 +37,10 @@ jobs:
         run: chmod +x mvnw
 
       - name: Run Tests (Unit & Integration)
+        env:
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         # We rely on Testcontainers (as per FRD) to spin up Postgres automatically
         # during the 'verify' phase. No external service definition needed here.
         run: ./mvnw verify
