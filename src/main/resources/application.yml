@@ -1,3 +1,18 @@
 spring:
+
+  # ==========================================
+  # Required if you run the DDBB locally
+  # ==========================================
+#  config:
+#    import: optional:file:./.env[.properties]
   application:
     name: GameVault
+  datasource:
+    url: ${POSTGRES_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: false
