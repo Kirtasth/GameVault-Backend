@@ -10,3 +10,6 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     generate-ddl: false
+  sql:
+    init:
+      mode: never
