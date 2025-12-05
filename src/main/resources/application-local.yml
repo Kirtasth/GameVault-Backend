@@ -1,10 +1,12 @@
 spring:
+  config:
+    import: optional:file:./.env[.properties]
   application:
     name: GameVault
   datasource:
-    url: ${{secrets.POSTGRES_URL}}
-    username: ${{secrets.POSTGRES_USER}}
-    password: ${{secrets.POSTGRES_PASSWORD}}
+    url: ${POSTGRES_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
