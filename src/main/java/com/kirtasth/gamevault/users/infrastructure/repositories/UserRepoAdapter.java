@@ -47,7 +47,7 @@ public class UserRepoAdapter implements UserRepoPort {
     public Result<User> findUserByEmail(String email) {
         var dbUser = this.userRepository.findByEmail(email).map(userMapper::toUser);
 
-        if (dbUser.isEmpty()){
+        if (dbUser.isEmpty()) {
             return new Result.Failure<>(
                     404,
                     "User with email: " + email + " not found.",
@@ -88,11 +88,11 @@ public class UserRepoAdapter implements UserRepoPort {
 
     @Override
     public Result<User> saveUser(User user) {
-        try{
+        try {
             var dbUser = this.userRepository.save(this.userMapper.toUserEntity(user));
 
             return new Result.Success<>(this.userMapper.toUser(dbUser));
-        } catch (DataIntegrityViolationException e){
+        } catch (DataIntegrityViolationException e) {
             return new Result.Failure<>(
                     400,
                     "Error saving user.",
@@ -104,17 +104,80 @@ public class UserRepoAdapter implements UserRepoPort {
 
     @Override
     public Result<Boolean> lockUserById(Long id, String reason) {
-        return null;
+
+        try {
+            var locked = this.userRepository.lockUserById(id, reason);
+
+            if (!locked) {
+                return new Result.Failure<>(
+                        400,
+                        "Error locking user with id: " + id + ".",
+                        null,
+                        null
+                );
+            }
+
+            return new Result.Success<>(true);
+        } catch (DataIntegrityViolationException e) {
+            return new Result.Failure<>(
+                    400,
+                    "Error locking user with id: " + id + ".",
+                    null,
+                    e
+            );
+        }
     }
 
     @Override
     public Result<Boolean> unlockUserById(Long id) {
-        return null;
+
+        try {
+            var unlocked = this.userRepository.unlockUserById(id);
+
+            if (!unlocked) {
+                return new Result.Failure<>(
+                        400,
+                        "Error unlocking user with id: " + id + ".",
+                        null,
+                        null
+                );
+            }
+
+            return new Result.Success<>(true);
+        } catch (DataIntegrityViolationException e) {
+            return new Result.Failure<>(
+                    400,
+                    "Error unlocking user with id: " + id + ".",
+                    null,
+                    e
+            );
+        }
     }
 
     @Override
     public Result<Boolean> deleteUserById(Long id) {
-        return null;
+
+        try {
+            var deleted = this.userRepository.softDeleteUserById(id);
+
+            if (!deleted) {
+                return new Result.Failure<>(
+                        400,
+                        "Error deleting user with id: " + id + ".",
+                        null,
+                        null
+                );
+            }
+
+            return new Result.Success<>(true);
+        } catch (DataIntegrityViolationException e) {
+            return new Result.Failure<>(
+                    400,
+                    "Error deleting user with id: " + id + ".",
+                    null,
+                    e
+            );
+        }
     }
 
     @Override
