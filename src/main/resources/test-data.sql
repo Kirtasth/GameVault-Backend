@@ -9,7 +9,7 @@ BEGIN;
 -- ------------------------------------------------------
 
 -- Insert Roles
-INSERT INTO "auth"."roles" ("id", "role", "description")
+INSERT INTO "auth"."roleEnums" ("id", "role", "description")
 VALUES (1, 'USER', 'Standard registered user who can purchase games'),
        (2, 'DEVELOPER', 'User who can upload and manage their own games'),
        (3, 'ADMIN', 'Platform administrator with moderation privileges');

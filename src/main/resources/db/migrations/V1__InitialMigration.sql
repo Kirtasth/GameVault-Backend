@@ -39,7 +39,7 @@ CREATE TABLE "auth"."users"
     "deleted_at"     timestamp
 );
 
-CREATE TABLE "auth"."roles"
+CREATE TABLE "auth"."roleEnums"
 (
     "id"          bigserial PRIMARY KEY,
     "role"        user_role NOT NULL,
@@ -165,7 +165,7 @@ ALTER TABLE "auth"."users_roles"
     ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE "auth"."users_roles"
-    ADD FOREIGN KEY ("role_id") REFERENCES "auth"."roles" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    ADD FOREIGN KEY ("role_id") REFERENCES "auth"."roleEnums" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE "auth"."users"
     ADD FOREIGN KEY ("id") REFERENCES "auth"."refresh_tokens" ("user_id") ON DELETE CASCADE ON UPDATE CASCADE;
