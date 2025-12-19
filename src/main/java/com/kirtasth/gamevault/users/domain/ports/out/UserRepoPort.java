@@ -4,8 +4,8 @@ import com.kirtasth.gamevault.common.models.enums.RoleEnum;
 import com.kirtasth.gamevault.common.models.page.Page;
 import com.kirtasth.gamevault.common.models.page.PageRequest;
 import com.kirtasth.gamevault.common.models.util.Result;
-import com.kirtasth.gamevault.users.domain.User;
-import com.kirtasth.gamevault.users.domain.UserCriteria;
+import com.kirtasth.gamevault.users.domain.models.User;
+import com.kirtasth.gamevault.users.domain.models.UserCriteria;
 
 import java.util.List;
 

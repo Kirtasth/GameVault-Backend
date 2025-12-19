@@ -1,6 +1,6 @@
 package com.kirtasth.gamevault.common.models.util;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.Map;
 
 public sealed interface Result<T> permits Result.Success, Result.Failure {
 
@@ -9,7 +9,7 @@ public sealed interface Result<T> permits Result.Success, Result.Failure {
     record Failure<T> (
         int errorCode,
         String errorMsg,
-        ObjectNode errorDetails,
+        Map<String, String> errorDetails,
         Exception exception
     ) implements Result<T> {}
 }

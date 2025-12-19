@@ -28,8 +28,6 @@ public class UserCriteriaDto {
 
     private Boolean credentialsExpired;
 
-    private Boolean deleted;
-
     private Instant lockedBefore;
 
     private Instant lockedAfter;
@@ -41,6 +39,10 @@ public class UserCriteriaDto {
     private Instant updatedBefore;
 
     private Instant updatedAfter;
+
+    private Instant deletedBefore;
+
+    private Instant deletedAfter;
 
     private List<RoleEnum> roleEnums;
 

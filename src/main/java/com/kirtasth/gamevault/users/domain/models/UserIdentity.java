@@ -1,4 +1,4 @@
-package com.kirtasth.gamevault.users.domain;
+package com.kirtasth.gamevault.users.domain.models;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -11,9 +11,9 @@ public class UserIdentity {
 
     private Long id;
 
-    private String provider;
+    private String loginProvider;
 
-    private String providedUserId;
+    private String loginProvidedUserId;
 
     private Instant createdAt;
 

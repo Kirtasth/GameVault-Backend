@@ -17,6 +17,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @Table(
         name = "users_identities",
+        schema = "auth",
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "unique_provider_provider_id",
@@ -37,11 +38,11 @@ public class UserIdentityEntity {
     @JoinColumn(name = "users_id", nullable = false)
     private UserEntity user;
 
-    @Column(nullable = false)
-    private String provider;
+    @Column(name = "login_provider", nullable = false)
+    private String loginProvider;
 
-    @Column(name = "provider_user_id", nullable = false)
-    private String providerUserId;
+    @Column(name = "login_provided_user_id", nullable = false)
+    private String loginProvidedUserId;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)

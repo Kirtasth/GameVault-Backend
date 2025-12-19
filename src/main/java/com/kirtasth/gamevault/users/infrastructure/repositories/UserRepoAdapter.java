@@ -5,8 +5,8 @@ import com.kirtasth.gamevault.common.models.enums.RoleEnum;
 import com.kirtasth.gamevault.common.models.page.Page;
 import com.kirtasth.gamevault.common.models.page.PageRequest;
 import com.kirtasth.gamevault.common.models.util.Result;
-import com.kirtasth.gamevault.users.domain.User;
-import com.kirtasth.gamevault.users.domain.UserCriteria;
+import com.kirtasth.gamevault.users.domain.models.User;
+import com.kirtasth.gamevault.users.domain.models.UserCriteria;
 import com.kirtasth.gamevault.users.domain.ports.out.UserRepoPort;
 import com.kirtasth.gamevault.users.infrastructure.dtos.entities.UserEntity;
 import com.kirtasth.gamevault.users.infrastructure.mappers.UserMapper;
@@ -89,7 +89,7 @@ public class UserRepoAdapter implements UserRepoPort {
     @Override
     public Result<User> saveUser(User user) {
         try {
-            var dbUser = this.userRepository.save(this.userMapper.toUserEntity(user));
+            var dbUser = this.userRepository.save(this.toUserEntity(user));
 
             return new Result.Success<>(this.userMapper.toUser(dbUser));
         } catch (DataIntegrityViolationException e) {
@@ -193,5 +193,13 @@ public class UserRepoAdapter implements UserRepoPort {
     @Override
     public Result<List<RoleEnum>> findUserByRoles(Long id) {
         return null;
+    }
+
+    private UserEntity toUserEntity(User user) {
+        var userEntity = this.userMapper.toUserEntity(user);
+
+        userEntity.getIdentities().forEach(identity -> identity.setUser(userEntity));
+
+        return userEntity;
     }
 }

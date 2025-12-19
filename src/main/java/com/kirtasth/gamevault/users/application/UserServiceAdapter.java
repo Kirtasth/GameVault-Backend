@@ -1,10 +1,10 @@
 package com.kirtasth.gamevault.users.application;
 
 import com.kirtasth.gamevault.common.models.enums.RoleEnum;
+import com.kirtasth.gamevault.common.models.page.Page;
 import com.kirtasth.gamevault.common.models.page.PageRequest;
 import com.kirtasth.gamevault.common.models.util.Result;
-import com.kirtasth.gamevault.users.domain.User;
-import com.kirtasth.gamevault.users.domain.UserCriteria;
+import com.kirtasth.gamevault.users.domain.models.*;
 import com.kirtasth.gamevault.users.domain.ports.in.UserServicePort;
 import com.kirtasth.gamevault.users.domain.ports.out.UserRepoPort;
 import lombok.RequiredArgsConstructor;
@@ -29,13 +29,26 @@ public class UserServiceAdapter implements UserServicePort {
     }
 
     @Override
-    public Result<List<User>> listUsersWithCriteria(UserCriteria criteria, PageRequest pageRequest) {
-        return null;
+    public Page<User> listUsersWithCriteria(UserCriteria criteria, PageRequest pageRequest) {
+
+        return this.userRepo.findAllUsersWithCriteria(criteria, pageRequest);
     }
 
     @Override
-    public Result<User> saveUser(User user) {
-        return null;
+    public Result<User> saveUser(NewUser newUser) {
+        var userIdentity = new UserIdentity();
+        userIdentity.setLoginProvider(newUser.getLoginProvider());
+        userIdentity.setLoginProvidedUserId(newUser.getLoginProvidedUserId());
+
+        var user = new User();
+        user.setUsername(newUser.getUsername());
+        user.setEmail(newUser.getEmail());
+        user.setPassword(newUser.getPassword());
+        user.setAvatarUrl(newUser.getAvatarUrl());
+        user.setBio(newUser.getBio());
+        user.setIdentities(List.of(userIdentity));
+
+        return userRepo.saveUser(user);
     }
 
     @Override
@@ -64,7 +77,7 @@ public class UserServiceAdapter implements UserServicePort {
     }
 
     @Override
-    public Result<List<RoleEnum>> getUserByRoles(Long id) {
+    public Result<List<Role>> getUserRolesById(Long id) {
         return null;
     }
 }

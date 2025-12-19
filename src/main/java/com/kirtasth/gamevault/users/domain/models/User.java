@@ -1,4 +1,4 @@
-package com.kirtasth.gamevault.users.domain;
+package com.kirtasth.gamevault.users.domain.models;
 
 
 import lombok.Getter;
