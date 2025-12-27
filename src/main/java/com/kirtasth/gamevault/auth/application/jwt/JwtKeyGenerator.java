@@ -30,12 +30,12 @@ public class JwtKeyGenerator implements KeyGeneratorPort {
 
     @Override
     public Key getPublicKey() {
-        return this.accessTokenKeyPair.getPublic();
+        return this.getAccessTokenKeyPair().getPublic();
     }
 
     @Override
     public Key getPrivateKey() {
-        return this.accessTokenKeyPair.getPrivate();
+        return this.getAccessTokenKeyPair().getPrivate();
     }
 
     private KeyPair getAccessTokenKeyPair() {

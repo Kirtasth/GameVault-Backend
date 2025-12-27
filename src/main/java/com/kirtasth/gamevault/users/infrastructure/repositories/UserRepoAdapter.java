@@ -5,10 +5,13 @@ import com.kirtasth.gamevault.common.models.enums.RoleEnum;
 import com.kirtasth.gamevault.common.models.page.Page;
 import com.kirtasth.gamevault.common.models.page.PageRequest;
 import com.kirtasth.gamevault.common.models.util.Result;
+import com.kirtasth.gamevault.users.domain.models.Role;
 import com.kirtasth.gamevault.users.domain.models.User;
 import com.kirtasth.gamevault.users.domain.models.UserCriteria;
 import com.kirtasth.gamevault.users.domain.ports.out.UserRepoPort;
 import com.kirtasth.gamevault.users.infrastructure.dtos.entities.UserEntity;
+import com.kirtasth.gamevault.users.infrastructure.dtos.entities.UserRoleEntity;
+import com.kirtasth.gamevault.users.infrastructure.dtos.entities.UserRoleKey;
 import com.kirtasth.gamevault.users.infrastructure.mappers.UserMapper;
 import com.kirtasth.gamevault.users.infrastructure.specifications.UserEntitySpecification;
 import lombok.RequiredArgsConstructor;
@@ -17,12 +20,17 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
 public class UserRepoAdapter implements UserRepoPort {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final UserRoleRepository userRoleRepository;
     private final UserMapper userMapper;
     private final PageMapper pageMapper;
     private final UserEntitySpecification userEntitySpecification;
@@ -45,7 +53,8 @@ public class UserRepoAdapter implements UserRepoPort {
 
     @Override
     public Result<User> findUserByEmail(String email) {
-        var dbUser = this.userRepository.findByEmail(email).map(userMapper::toUser);
+        var dbUser = this.userRepository.findByEmail(email)
+                .map(userMapper::toUser);
 
         if (dbUser.isEmpty()) {
             return new Result.Failure<>(
@@ -90,6 +99,19 @@ public class UserRepoAdapter implements UserRepoPort {
     public Result<User> saveUser(User user) {
         try {
             var dbUser = this.userRepository.save(this.toUserEntity(user));
+
+            var defaultRoles = List.of(RoleEnum.USER);
+
+            var res = this.addRolesToUser(dbUser.getId(), defaultRoles);
+
+            if (res instanceof Result.Failure) {
+                return new Result.Failure<>(
+                        400,
+                        "Error saving user.",
+                        Map.of("roles", "Error adding default roles to user."),
+                        null
+                );
+            }
 
             return new Result.Success<>(this.userMapper.toUser(dbUser));
         } catch (DataIntegrityViolationException e) {
@@ -182,7 +204,54 @@ public class UserRepoAdapter implements UserRepoPort {
 
     @Override
     public Result<Boolean> addRolesToUser(Long id, List<RoleEnum> roleEnums) {
-        return null;
+        try {
+
+        var roleEntities = roleEnums.stream()
+                .map(role -> this.roleRepository.findByRole(role).stream()
+                        .findFirst().orElse(null))
+                .toList();
+
+        if (roleEntities.isEmpty() || roleEntities.stream().anyMatch(Objects::isNull)) {
+            return new Result.Failure<>(
+                    400,
+                    "Error adding roles to user with id: " + id + ".",
+                    Map.of("roles", "One or more roles where not found."),
+                    null
+            );
+        }
+
+        var userEntity = this.userRepository.findById(id);
+
+        if (userEntity.isEmpty()) {
+            return new Result.Failure<>(
+                    400,
+                    "Error adding roles to user with id: " + id + ".",
+                    Map.of("user", "User was not found."),
+                    null
+            );
+        }
+
+
+            roleEntities.forEach(
+                    role -> {
+                        var newUserRole = new UserRoleEntity();
+                        newUserRole.setId(new UserRoleKey(id, role.getId()));
+                        newUserRole.setUser(userEntity.get());
+                        newUserRole.setRole(role);
+
+                        this.userRoleRepository.save(newUserRole);
+                    }
+            );
+        } catch (Exception e) {
+            return new Result.Failure<>(
+                    400,
+                    "Error adding roles to user with id: " + id + ".",
+                    null,
+                    e
+            );
+        }
+
+        return new Result.Success<>(true);
     }
 
     @Override
@@ -191,8 +260,15 @@ public class UserRepoAdapter implements UserRepoPort {
     }
 
     @Override
-    public Result<List<RoleEnum>> findUserByRoles(Long id) {
-        return null;
+    public List<Role> findRolesByUserId(Long userId) {
+        var userRoleList = this.userRoleRepository.findAllByUserId(userId);
+        return userRoleList.stream()
+                .map(userRole ->
+                        this.roleRepository.findById(userRole.getRole().getId()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(this.userMapper::toRole)
+                .toList();
     }
 
     private UserEntity toUserEntity(User user) {

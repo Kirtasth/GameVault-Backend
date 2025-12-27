@@ -22,6 +22,6 @@ public interface UserServicePort {
     Result<Boolean> deleteUserById(Long id);
     Result<Boolean> addRolesToUser(Long id, List<RoleEnum> roleEnums);
     Result<Boolean> removeRolesFromUser(Long id, List<RoleEnum> roleEnums);
-    Result<List<Role>> getUserRolesById(Long id);
+    List<Role> getRolesByUserId(Long userId);
 
 }

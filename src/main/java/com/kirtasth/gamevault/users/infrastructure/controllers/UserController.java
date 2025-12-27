@@ -6,16 +6,15 @@ import com.kirtasth.gamevault.common.infrastructure.responses.ErrorResponse;
 import com.kirtasth.gamevault.common.models.util.Result;
 import com.kirtasth.gamevault.users.domain.models.User;
 import com.kirtasth.gamevault.users.domain.ports.in.UserServicePort;
-import com.kirtasth.gamevault.users.infrastructure.dtos.requests.NewUserDto;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.UserCriteriaDto;
 import com.kirtasth.gamevault.users.infrastructure.mappers.UserMapper;
-import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +27,29 @@ public class UserController {
     private final PageMapper pageMapper;
     private final UserMapper userMapper;
     private final UserServicePort userService;
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<?> userInfo(@PathVariable @NonNull @Min(1) Long userId) {
+        var userRes = this.userService.getUserById(userId);
+
+        if (userRes instanceof Result.Failure<User>(
+                int errorCode, String errorMsg, java.util.Map<String, String> errorDetails, Exception exception
+        )) {
+            var errorResponse = new ErrorResponse(
+                    errorCode,
+                    exception == null
+                            ? "UNKNOWN_EXCEPTION"
+                            : exception.getClass().getSimpleName(),
+                    errorMsg,
+                    errorDetails
+            );
+            return ResponseEntity.status(errorCode).body(errorResponse);
+        }
+
+        var user = (Result.Success<User>) userRes;
+        return ResponseEntity.ok(userMapper.toUserResponse(user.data()));
+    }
+
 
     @GetMapping
     public ResponseEntity<?> listWithParams(

@@ -1,6 +1,7 @@
 package com.kirtasth.gamevault.auth.application.services;
 
 import com.kirtasth.gamevault.auth.domain.models.AccessJwt;
+import com.kirtasth.gamevault.auth.domain.models.AuthUser;
 import com.kirtasth.gamevault.auth.domain.models.Credentials;
 import com.kirtasth.gamevault.auth.domain.models.NewUser;
 import com.kirtasth.gamevault.auth.domain.ports.in.AuthServicePort;
@@ -42,10 +43,18 @@ public class AuthServiceAdapter implements AuthServicePort {
         var authenticationAuthenticatedResult = authProviderPort.authenticate(authentication);
 
         if (authenticationAuthenticatedResult instanceof Result.Success<Authentication>(Authentication auth)) {
+            var authUser = (AuthUser) auth.getPrincipal();
 
+            return this.jwtService.getAccessJwt(authUser);
         }
+        var failure = (Result.Failure<Authentication>) authenticationAuthenticatedResult;
 
-        return null;
+        return new Result.Failure<>(
+                failure.errorCode(),
+                failure.errorMsg(),
+                failure.errorDetails(),
+                failure.exception()
+        );
     }
 
 }

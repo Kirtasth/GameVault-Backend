@@ -4,6 +4,7 @@ import com.kirtasth.gamevault.common.models.enums.RoleEnum;
 import com.kirtasth.gamevault.common.models.page.Page;
 import com.kirtasth.gamevault.common.models.page.PageRequest;
 import com.kirtasth.gamevault.common.models.util.Result;
+import com.kirtasth.gamevault.users.domain.models.Role;
 import com.kirtasth.gamevault.users.domain.models.User;
 import com.kirtasth.gamevault.users.domain.models.UserCriteria;
 
@@ -20,5 +21,5 @@ public interface UserRepoPort {
     Result<Boolean> deleteUserById(Long id);
     Result<Boolean> addRolesToUser(Long id, List<RoleEnum> roleEnums);
     Result<Boolean> removeRolesFromUser(Long id, List<RoleEnum> roleEnums);
-    Result<List<RoleEnum>> findUserByRoles(Long id);
+    List<Role> findRolesByUserId(Long userId);
 }

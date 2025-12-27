@@ -7,7 +7,8 @@ import lombok.Setter;
 import java.time.Instant;
 import java.util.List;
 
-@Getter
+
+@Getter()
 @Setter
 public class User {
 
@@ -44,5 +45,8 @@ public class User {
     private Instant deletedAt;
 
     private List<UserIdentity> identities;
+
+    private List<Role> roles;
+
 
 }

@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 
@@ -14,7 +15,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "user_roles")
+@Table(name = "user_roles", schema = "auth")
 public class UserRoleEntity {
 
     @EmbeddedId
@@ -31,5 +32,7 @@ public class UserRoleEntity {
     private RoleEntity role;
 
     @Column(name = "assigned_at", nullable = false)
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
     private Instant assignedAt;
 }

@@ -1,4 +1,4 @@
-package com.kirtasth.gamevault.auth.domain.models;
+package com.kirtasth.gamevault.auth.infrastructure.dtos.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @AllArgsConstructor
-public class AccessJwt {
+public class AccessJwtResponse {
 
     private Long userId;
     private String accessToken;

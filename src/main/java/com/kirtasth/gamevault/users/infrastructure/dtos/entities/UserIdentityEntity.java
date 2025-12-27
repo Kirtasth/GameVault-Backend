@@ -21,11 +21,11 @@ import java.time.Instant;
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "unique_provider_provider_id",
-                        columnNames = { "provider", "provider_user_id" }
+                        columnNames = { "login_provider", "login_provided_user_id" }
                 ),
                 @UniqueConstraint(
                         name = "unique_user_provider",
-                        columnNames = { "users_id", "provider" }
+                        columnNames = { "users_id", "login_provider" }
                 )
         }
 )

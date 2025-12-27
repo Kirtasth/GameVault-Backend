@@ -20,12 +20,12 @@ public class UserServiceAdapter implements UserServicePort {
 
     @Override
     public Result<User> getUserById(Long id) {
-        return null;
+        return userRepo.findUserById(id);
     }
 
     @Override
     public Result<User> getUserByEmail(String email) {
-        return null;
+        return this.userRepo.findUserByEmail(email);
     }
 
     @Override
@@ -47,6 +47,10 @@ public class UserServiceAdapter implements UserServicePort {
         user.setAvatarUrl(newUser.getAvatarUrl());
         user.setBio(newUser.getBio());
         user.setIdentities(List.of(userIdentity));
+        user.setAccountEnabled(true);
+        user.setAccountExpired(false);
+        user.setAccountLocked(false);
+        user.setCredentialsExpired(false);
 
         return userRepo.saveUser(user);
     }
@@ -77,7 +81,7 @@ public class UserServiceAdapter implements UserServicePort {
     }
 
     @Override
-    public Result<List<Role>> getUserRolesById(Long id) {
-        return null;
+    public List<Role> getRolesByUserId(Long userId) {
+        return this.userRepo.findRolesByUserId(userId);
     }
 }

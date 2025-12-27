@@ -57,14 +57,14 @@ CREATE TABLE "auth"."users_identities"
 CREATE TABLE "auth"."roles"
 (
     "id"          bigserial PRIMARY KEY,
-    "role"        user_role NOT NULL,
+    "role"        user_role UNIQUE NOT NULL,
     "description" text,
     "created_at"  timestamp NOT NULL DEFAULT (now()),
     "updated_at"  timestamp NOT NULL DEFAULT (now()),
     "deleted_at"  timestamp
 );
 
-CREATE TABLE "auth"."users_roles"
+CREATE TABLE "auth"."user_roles"
 (
     "user_id"     bigint,
     "role_id"     bigint,
@@ -187,11 +187,11 @@ ALTER TABLE "auth"."users_identities"
 ALTER TABLE "auth"."users_identities"
     ADD CONSTRAINT FK_USERS_IDENTITIES_ON_USERS FOREIGN KEY (users_id) REFERENCES auth.users (id);
 
-ALTER TABLE "auth"."users_roles"
+ALTER TABLE "auth"."user_roles"
     ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE "auth"."users_roles"
-    ADD FOREIGN KEY ("role_id") REFERENCES "auth"."roleEnums" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "auth"."user_roles"
+    ADD FOREIGN KEY ("role_id") REFERENCES "auth"."roles" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE "auth"."refresh_tokens"
     ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -1,15 +1,12 @@
 package com.kirtasth.gamevault.auth.domain.ports.in;
 
+import com.kirtasth.gamevault.auth.domain.models.AccessJwt;
 import com.kirtasth.gamevault.auth.domain.models.AuthUser;
-import io.jsonwebtoken.Claims;
-
-import java.util.function.Function;
+import com.kirtasth.gamevault.common.models.util.Result;
 
 public interface JwtServicePort {
 
-    String extractEmail(String token);
-    <T> T extractClaim(String token, Function<Claims, T> claimsResolver);
-    String generateAccessToken(AuthUser authUser);
-    String generateRefreshToken(AuthUser authUser);
-    boolean isTokenValid(String token, AuthUser authUser);
+    Result<AccessJwt> getAccessJwt(AuthUser authUser);
+    Result<String> extractEmail(String token);
+    boolean isTokenNotExpiredAndValid(String token, AuthUser authUser);
 }

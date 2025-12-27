@@ -1,6 +1,7 @@
 package com.kirtasth.gamevault.users.infrastructure.specifications;
 
 import com.kirtasth.gamevault.common.models.enums.RoleEnum;
+import com.kirtasth.gamevault.users.infrastructure.dtos.entities.RoleEntity;
 import com.kirtasth.gamevault.users.infrastructure.dtos.entities.UserEntity;
 import com.kirtasth.gamevault.users.infrastructure.dtos.entities.UserRoleEntity;
 import jakarta.persistence.criteria.Join;
@@ -147,9 +148,9 @@ public class UserEntitySpecificationImpl implements UserEntitySpecification {
             }
 
             Join<UserEntity, UserRoleEntity> userRoles = root.join("userRoles");
-            Join<UserRoleEntity, RoleEnum> roles = userRoles.join("role");
+            Join<UserRoleEntity, RoleEntity> roles = userRoles.join("role");
 
-            query.where(roles.get("role").in(roleEnums));
+            query.where(roles.get("role").as(String.class).in(roleEnums.stream().map(RoleEnum::name).toList()));
 
             query.groupBy(root.get("id"));
 
