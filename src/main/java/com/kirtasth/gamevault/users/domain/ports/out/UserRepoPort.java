@@ -22,4 +22,5 @@ public interface UserRepoPort {
     Result<Boolean> addRolesToUser(Long id, List<RoleEnum> roleEnums);
     Result<Boolean> removeRolesFromUser(Long id, List<RoleEnum> roleEnums);
     List<Role> findRolesByUserId(Long userId);
+    User getReference(Long id);
 }

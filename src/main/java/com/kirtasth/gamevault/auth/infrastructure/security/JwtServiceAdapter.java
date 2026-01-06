@@ -3,11 +3,14 @@ package com.kirtasth.gamevault.auth.infrastructure.security;
 import com.kirtasth.gamevault.auth.application.jwt.JwtKeyGenerator;
 import com.kirtasth.gamevault.auth.domain.models.AccessJwt;
 import com.kirtasth.gamevault.auth.domain.models.AuthUser;
+import com.kirtasth.gamevault.auth.domain.models.RefreshToken;
 import com.kirtasth.gamevault.auth.domain.ports.in.JwtServicePort;
+import com.kirtasth.gamevault.auth.domain.ports.out.JwtRepoPort;
 import com.kirtasth.gamevault.common.models.util.Result;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,21 +35,44 @@ public class JwtServiceAdapter implements JwtServicePort {
     private long jwtRefreshExpiration;
 
     private final JwtKeyGenerator jwtKeyGenerator;
+    private final JwtRepoPort jwtRepoPort;
 
     @Override
+    @Transactional
     public Result<AccessJwt> getAccessJwt(AuthUser authUser) {
         try {
             var accessToken = generateAccessToken(authUser);
-            var refreshToken = generateRefreshToken(authUser);
+            var refreshTokenStr = generateRefreshToken(authUser);
 
             var accessJwt = new AccessJwt(
                     authUser.getId(),
                     accessToken,
-                    refreshToken,
+                    refreshTokenStr,
                     "Bearer",
                     jwtExpiration,
                     jwtRefreshExpiration
             );
+
+            var refreshToken = new RefreshToken(
+                    null,
+                    authUser.getId(),
+                    refreshTokenStr,
+                    new Date(System.currentTimeMillis() + jwtRefreshExpiration).toInstant(),
+                    null
+            );
+
+            var refreshTokenResult = this.jwtRepoPort.save(refreshToken);
+
+            if (refreshTokenResult instanceof Result.Failure<RefreshToken>(
+                    int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
+            )) {
+                return new Result.Failure<>(
+                        errorCode,
+                        errorMsg,
+                        errorDetails,
+                        exception
+                );
+            }
 
             return new Result.Success<>(accessJwt);
         } catch (JwtException e) {
@@ -87,6 +113,15 @@ public class JwtServiceAdapter implements JwtServicePort {
         } catch (JwtException e) {
             return false;
         }
+    }
+
+    @Override
+    @Transactional
+    public Result<AccessJwt> refresh(String refreshToken) {
+
+
+
+        return null;
     }
 
     private Claims getTokenClaims(String token) throws JwtException {

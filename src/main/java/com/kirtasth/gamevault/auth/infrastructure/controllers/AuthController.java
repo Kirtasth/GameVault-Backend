@@ -5,6 +5,7 @@ import com.kirtasth.gamevault.auth.domain.models.AccessJwt;
 import com.kirtasth.gamevault.auth.domain.ports.in.AuthServicePort;
 import com.kirtasth.gamevault.auth.infrastructure.dtos.requests.CredentialsRequest;
 import com.kirtasth.gamevault.auth.infrastructure.dtos.requests.NewUserRequest;
+import com.kirtasth.gamevault.auth.infrastructure.dtos.requests.RefreshTokenRequest;
 import com.kirtasth.gamevault.auth.infrastructure.mappers.AuthMapper;
 import com.kirtasth.gamevault.common.infrastructure.responses.ErrorResponse;
 import com.kirtasth.gamevault.common.models.util.Result;
@@ -82,5 +83,15 @@ public class AuthController {
                 ),
                 HttpStatusCode.valueOf(failure.errorCode())
         );
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(
+            @RequestBody @Valid RefreshTokenRequest refreshTokenRequest
+    ) {
+        var token = refreshTokenRequest.getRefreshToken();
+
+
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 }

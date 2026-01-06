@@ -10,4 +10,5 @@ public interface AuthServicePort {
 
     Result<AccessJwt> login(Credentials credentials);
     Result<Void> registerUser(NewUser newUser);
+    Result<AccessJwt> refresh(String refreshToken);
 }

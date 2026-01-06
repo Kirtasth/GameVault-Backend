@@ -271,6 +271,11 @@ public class UserRepoAdapter implements UserRepoPort {
                 .toList();
     }
 
+    @Override
+    public User getReference(Long id) {
+        return this.userMapper.toUser(this.userRepository.getReferenceById(id));
+    }
+
     private UserEntity toUserEntity(User user) {
         var userEntity = this.userMapper.toUserEntity(user);
 

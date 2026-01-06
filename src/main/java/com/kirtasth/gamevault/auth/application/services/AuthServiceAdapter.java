@@ -1,9 +1,6 @@
 package com.kirtasth.gamevault.auth.application.services;
 
-import com.kirtasth.gamevault.auth.domain.models.AccessJwt;
-import com.kirtasth.gamevault.auth.domain.models.AuthUser;
-import com.kirtasth.gamevault.auth.domain.models.Credentials;
-import com.kirtasth.gamevault.auth.domain.models.NewUser;
+import com.kirtasth.gamevault.auth.domain.models.*;
 import com.kirtasth.gamevault.auth.domain.ports.in.AuthServicePort;
 import com.kirtasth.gamevault.auth.domain.ports.in.JwtServicePort;
 import com.kirtasth.gamevault.auth.domain.ports.out.AuthProviderPort;
@@ -57,4 +54,11 @@ public class AuthServiceAdapter implements AuthServicePort {
         );
     }
 
+    @Override
+    public Result<AccessJwt> refresh(String refreshToken) {
+
+
+
+        return null;
+    }
 }

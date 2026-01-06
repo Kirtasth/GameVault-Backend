@@ -9,4 +9,5 @@ public interface JwtServicePort {
     Result<AccessJwt> getAccessJwt(AuthUser authUser);
     Result<String> extractEmail(String token);
     boolean isTokenNotExpiredAndValid(String token, AuthUser authUser);
+    Result<AccessJwt> refresh(String refreshToken);
 }
