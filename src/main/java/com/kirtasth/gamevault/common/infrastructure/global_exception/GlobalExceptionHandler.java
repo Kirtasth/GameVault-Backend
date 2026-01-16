@@ -1,7 +1,6 @@
 package com.kirtasth.gamevault.common.infrastructure.global_exception;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kirtasth.gamevault.common.infrastructure.responses.ErrorResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;

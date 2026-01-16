@@ -85,4 +85,6 @@ public class UserEntity {
     )
     private List<RoleEntity> roles;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<RefreshTokenEntity> refreshTokens;
 }

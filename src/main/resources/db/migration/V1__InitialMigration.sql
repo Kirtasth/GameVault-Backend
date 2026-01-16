@@ -78,7 +78,6 @@ CREATE TABLE "auth"."refresh_tokens"
     "user_id"    bigint              NOT NULL,
     "token"      varchar(512) UNIQUE NOT NULL,
     "created_at" timestamp           NOT NULL DEFAULT (now()),
-    "updated_at" timestamp           NOT NULL DEFAULT (now()),
     "revoked_at" timestamp
 );
 
