@@ -13,6 +13,9 @@ import com.kirtasth.gamevault.users.infrastructure.dtos.entities.UserEntity;
 import com.kirtasth.gamevault.users.infrastructure.dtos.entities.UserRoleEntity;
 import com.kirtasth.gamevault.users.infrastructure.dtos.entities.UserRoleKey;
 import com.kirtasth.gamevault.users.infrastructure.mappers.UserMapper;
+import com.kirtasth.gamevault.users.infrastructure.repositories.jpa.RoleRepository;
+import com.kirtasth.gamevault.users.infrastructure.repositories.jpa.UserRepository;
+import com.kirtasth.gamevault.users.infrastructure.repositories.jpa.UserRoleRepository;
 import com.kirtasth.gamevault.users.infrastructure.specifications.UserEntitySpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -98,7 +101,7 @@ public class UserRepoAdapter implements UserRepoPort {
     @Override
     public Result<User> saveUser(User user) {
         try {
-            var dbUser = this.userRepository.save(this.toUserEntity(user));
+            var dbUser = this.userRepository.save(this.userMapper.toUserEntity(user));
 
             var defaultRoles = List.of(RoleEnum.USER);
 
@@ -206,30 +209,30 @@ public class UserRepoAdapter implements UserRepoPort {
     public Result<Boolean> addRolesToUser(Long id, List<RoleEnum> roleEnums) {
         try {
 
-        var roleEntities = roleEnums.stream()
-                .map(role -> this.roleRepository.findByRole(role).stream()
-                        .findFirst().orElse(null))
-                .toList();
+            var roleEntities = roleEnums.stream()
+                    .map(role -> this.roleRepository.findByRole(role).stream()
+                            .findFirst().orElse(null))
+                    .toList();
 
-        if (roleEntities.isEmpty() || roleEntities.stream().anyMatch(Objects::isNull)) {
-            return new Result.Failure<>(
-                    400,
-                    "Error adding roles to user with id: " + id + ".",
-                    Map.of("roles", "One or more roles where not found."),
-                    null
-            );
-        }
+            if (roleEntities.isEmpty() || roleEntities.stream().anyMatch(Objects::isNull)) {
+                return new Result.Failure<>(
+                        400,
+                        "Error adding roles to user with id: " + id + ".",
+                        Map.of("roles", "One or more roles where not found."),
+                        null
+                );
+            }
 
-        var userEntity = this.userRepository.findById(id);
+            var userEntity = this.userRepository.findById(id);
 
-        if (userEntity.isEmpty()) {
-            return new Result.Failure<>(
-                    400,
-                    "Error adding roles to user with id: " + id + ".",
-                    Map.of("user", "User was not found."),
-                    null
-            );
-        }
+            if (userEntity.isEmpty()) {
+                return new Result.Failure<>(
+                        400,
+                        "Error adding roles to user with id: " + id + ".",
+                        Map.of("user", "User was not found."),
+                        null
+                );
+            }
 
 
             roleEntities.forEach(
@@ -276,11 +279,4 @@ public class UserRepoAdapter implements UserRepoPort {
         return this.userMapper.toUser(this.userRepository.getReferenceById(id));
     }
 
-    private UserEntity toUserEntity(User user) {
-        var userEntity = this.userMapper.toUserEntity(user);
-
-        userEntity.getIdentities().forEach(identity -> identity.setUser(userEntity));
-
-        return userEntity;
-    }
 }

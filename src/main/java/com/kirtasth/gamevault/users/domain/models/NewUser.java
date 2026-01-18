@@ -17,7 +17,4 @@ public class NewUser {
 
     private String bio;
 
-    private String loginProvider;
-
-    private String loginProvidedUserId;
 }

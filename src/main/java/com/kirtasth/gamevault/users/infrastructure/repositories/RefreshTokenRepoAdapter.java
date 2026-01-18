@@ -4,6 +4,7 @@ import com.kirtasth.gamevault.common.models.util.Result;
 import com.kirtasth.gamevault.users.domain.models.RefreshToken;
 import com.kirtasth.gamevault.users.domain.ports.out.RefreshTokenRepoPort;
 import com.kirtasth.gamevault.users.infrastructure.mappers.AuthMapper;
+import com.kirtasth.gamevault.users.infrastructure.repositories.jpa.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -59,7 +60,7 @@ public class RefreshTokenRepoAdapter implements RefreshTokenRepoPort {
 
     @Override
     public Result<Void> revokeByUserId(Long userId) {
-        var refreshToken = this.refreshTokenRepository.findByUserId(userId);
+        var refreshToken = this.refreshTokenRepository.findFirstByUserIdOrderByCreatedAtDesc(userId);
         if (refreshToken.isEmpty()) {
             return new Result.Failure<>(
                     404,

@@ -23,7 +23,4 @@ public class NewUserRequest {
 
     private String bio;
 
-    private String loginProvider;
-
-    private String loginProvidedUserId;
 }

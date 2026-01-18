@@ -36,9 +36,6 @@ public class UserServiceAdapter implements UserServicePort {
 
     @Override
     public Result<User> saveUser(NewUser newUser) {
-        var userIdentity = new UserIdentity();
-        userIdentity.setLoginProvider(newUser.getLoginProvider());
-        userIdentity.setLoginProvidedUserId(newUser.getLoginProvidedUserId());
 
         var user = new User();
         user.setUsername(newUser.getUsername());
@@ -46,7 +43,6 @@ public class UserServiceAdapter implements UserServicePort {
         user.setPassword(newUser.getPassword());
         user.setAvatarUrl(newUser.getAvatarUrl());
         user.setBio(newUser.getBio());
-        user.setIdentities(List.of(userIdentity));
         user.setAccountEnabled(true);
         user.setAccountExpired(false);
         user.setAccountLocked(false);

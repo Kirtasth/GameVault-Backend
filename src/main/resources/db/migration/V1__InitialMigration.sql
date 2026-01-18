@@ -45,15 +45,6 @@ CREATE TABLE "auth"."users"
     "deleted_at"          timestamp
 );
 
-CREATE TABLE "auth"."users_identities"
-(
-    id                     bigserial PRIMARY KEY,
-    users_id               bigint       NOT NULL,
-    login_provider         VARCHAR(255) NOT NULL,
-    login_provided_user_id VARCHAR(255) NOT NULL,
-    created_at             timestamp    NOT NULL DEFAULT (now())
-);
-
 CREATE TABLE "auth"."roles"
 (
     "id"          bigserial PRIMARY KEY,
@@ -176,15 +167,6 @@ CREATE TABLE "checkout"."user_purchased_games"
 );
 
 
-
-ALTER TABLE "auth"."users_identities"
-    ADD CONSTRAINT unique_provided_provider_id UNIQUE (login_provider, login_provided_user_id);
-
-ALTER TABLE "auth"."users_identities"
-    ADD CONSTRAINT unique_user_provider UNIQUE (users_id, login_provider);
-
-ALTER TABLE "auth"."users_identities"
-    ADD CONSTRAINT FK_USERS_IDENTITIES_ON_USERS FOREIGN KEY (users_id) REFERENCES auth.users (id);
 
 ALTER TABLE "auth"."user_roles"
     ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;

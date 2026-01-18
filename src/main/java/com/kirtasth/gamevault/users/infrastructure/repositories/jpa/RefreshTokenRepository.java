@@ -1,4 +1,4 @@
-package com.kirtasth.gamevault.users.infrastructure.repositories;
+package com.kirtasth.gamevault.users.infrastructure.repositories.jpa;
 
 import com.kirtasth.gamevault.users.infrastructure.dtos.entities.RefreshTokenEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,5 +9,5 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshTokenEntity
 
     Optional<RefreshTokenEntity> findByToken(String token);
 
-    Optional<RefreshTokenEntity> findByUserId(Long userId);
+    Optional<RefreshTokenEntity> findFirstByUserIdOrderByCreatedAtDesc(Long userId);
 }

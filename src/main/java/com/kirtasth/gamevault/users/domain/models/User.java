@@ -44,8 +44,6 @@ public class User {
 
     private Instant deletedAt;
 
-    private List<UserIdentity> identities;
-
     private List<Role> roles;
 
 

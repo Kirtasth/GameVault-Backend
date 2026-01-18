@@ -38,7 +38,6 @@ public class UserDetailsServiceAdapter implements UserDetailsService {
             user.setCreatedAt(serviceUser.getCreatedAt());
             user.setUpdatedAt(serviceUser.getUpdatedAt());
             user.setDeletedAt(serviceUser.getDeletedAt());
-            user.setUserIdentities(serviceUser.getIdentities());
 
             user.setRoles(userServicePort.getRolesByUserId(serviceUser.getId()));
 

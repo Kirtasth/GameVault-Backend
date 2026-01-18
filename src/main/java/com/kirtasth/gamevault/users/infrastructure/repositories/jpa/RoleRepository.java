@@ -1,4 +1,4 @@
-package com.kirtasth.gamevault.users.infrastructure.repositories;
+package com.kirtasth.gamevault.users.infrastructure.repositories.jpa;
 
 import com.kirtasth.gamevault.common.models.enums.RoleEnum;
 import com.kirtasth.gamevault.users.infrastructure.dtos.entities.RoleEntity;

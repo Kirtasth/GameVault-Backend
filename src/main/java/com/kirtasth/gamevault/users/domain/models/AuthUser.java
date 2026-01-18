@@ -45,8 +45,6 @@ public class AuthUser implements UserDetails {
 
     private Instant deletedAt;
 
-    private List<UserIdentity> userIdentities;
-
     private List<Role> roles;
 
     @Override
