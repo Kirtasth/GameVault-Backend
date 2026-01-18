@@ -35,4 +35,4 @@ build/
 **/.env
 
 ### Keys ###
-**/.key
+**/*.key
