@@ -29,6 +29,9 @@ WORKDIR /app
 # Create a non-root user for security
 RUN addgroup -S spring && adduser -S spring -G spring
 
+# Grant permissions
+RUN chown -R spring:spring /app
+
 # Copy the built JAR from the `builder` stage
 COPY --from=builder /build/target/*.jar app.jar
 
