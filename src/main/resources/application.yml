@@ -1,6 +1,14 @@
 spring:
+  config:
+    import: optional:file:./.env[.properties]
   application:
     name: GameVault
+
+    security:
+      jwt:
+        expiration: 360_000
+        refresh-expiration: 8_640_000
+
   datasource:
     url: ${POSTGRES_URL}
     username: ${POSTGRES_USER}
@@ -10,6 +18,9 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     generate-ddl: false
+    hibernate:
+      ddl-auto: validate
+
   sql:
     init:
-      mode: never
+      mode: always

@@ -1,0 +1,24 @@
+package com.kirtasth.gamevault.users.infrastructure.mappers;
+
+import com.kirtasth.gamevault.users.domain.models.Role;
+import com.kirtasth.gamevault.users.domain.models.User;
+import com.kirtasth.gamevault.users.domain.models.UserCriteria;
+import com.kirtasth.gamevault.users.infrastructure.dtos.entities.RoleEntity;
+import com.kirtasth.gamevault.users.infrastructure.dtos.entities.UserEntity;
+import com.kirtasth.gamevault.users.infrastructure.dtos.requests.UserCriteriaDto;
+import com.kirtasth.gamevault.users.infrastructure.dtos.responses.UserResponse;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
+
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface UserMapper {
+
+    User toUser(UserEntity userEntity);
+    UserEntity toUserEntity(User user);
+
+    UserResponse toUserResponse(User user);
+
+    UserCriteria toUserCriteria(UserCriteriaDto userCriteriaDto);
+
+    Role toRole(RoleEntity roleEntity);
+}
