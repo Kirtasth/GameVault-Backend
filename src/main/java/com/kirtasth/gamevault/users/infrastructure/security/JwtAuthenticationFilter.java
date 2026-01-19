@@ -44,14 +44,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         var validationResult = this.refreshTokenService.validate(jwt);
 
         if (validationResult instanceof Result.Failure<Void>) {
-//            filterChain.doFilter(request, response);
+            filterChain.doFilter(request, response);
             return;
         }
 
         var userEmailRes = this.refreshTokenService.extractEmail(jwt);
 
         if (userEmailRes instanceof Result.Failure<String>) {
-//            filterChain.doFilter(request, response);
+            filterChain.doFilter(request, response);
             return;
         }
 
