@@ -1,8 +1,9 @@
 package com.kirtasth.gamevault.users.infrastructure.mappers;
 
+import com.kirtasth.gamevault.catalog.domain.models.Developer;
+import com.kirtasth.gamevault.catalog.infrastructure.dtos.entities.DeveloperEntity;
 import com.kirtasth.gamevault.users.domain.models.*;
 import com.kirtasth.gamevault.users.infrastructure.dtos.entities.RefreshTokenEntity;
-import com.kirtasth.gamevault.users.infrastructure.dtos.entities.UserEntity;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.CredentialsRequest;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.NewUserRequest;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.RefreshTokenPetitionRequest;
@@ -32,5 +33,7 @@ public interface AuthMapper {
 
     RefreshTokenPetition toRefreshTokenPetition(RefreshTokenPetitionRequest refreshTokenPetitionRequest);
 
-    RefreshTokenResponse toRefreshTokenResponse(RefreshToken refreshToken);
+    Developer toDeveloper(DeveloperEntity developerEntity);
+
+    DeveloperEntity toDeveloperEntity(Developer developer);
 }

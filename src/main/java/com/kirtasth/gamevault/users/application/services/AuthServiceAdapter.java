@@ -4,7 +4,6 @@ import com.kirtasth.gamevault.common.models.util.Result;
 import com.kirtasth.gamevault.users.domain.models.*;
 import com.kirtasth.gamevault.users.domain.ports.in.AuthServicePort;
 import com.kirtasth.gamevault.users.domain.ports.in.JwtServicePort;
-import com.kirtasth.gamevault.users.domain.ports.in.RefreshTokenServicePort;
 import com.kirtasth.gamevault.users.domain.ports.in.UserServicePort;
 import com.kirtasth.gamevault.users.domain.ports.out.AuthProviderPort;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,6 @@ public class AuthServiceAdapter implements AuthServicePort {
     private final PasswordEncoder passwordEncoder;
     private final UserServicePort userService;
     private final JwtServicePort jwtService;
-    private final RefreshTokenServicePort refreshTokenService;
 
     @Override
     public Result<Void> registerUser(NewUser newUser) {
@@ -32,7 +30,7 @@ public class AuthServiceAdapter implements AuthServicePort {
 
         var savedUser = userService.saveUser(newUser);
 
-        if (savedUser instanceof Result.Failure<User> (
+        if (savedUser instanceof Result.Failure<User>(
                 int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
         )) {
             return new Result.Failure<>(
@@ -70,9 +68,8 @@ public class AuthServiceAdapter implements AuthServicePort {
 
         var authUser = (AuthUser) auth.getPrincipal();
 
-        var jwtResult = jwtService.getAccessJwt(authUser);
-
-        if (jwtResult instanceof Result.Failure<AccessJwt>(
+        var revokeResult = this.jwtService.revokeAll(authUser.getId());
+        if (revokeResult instanceof Result.Failure<Void>(
                 int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
         )) {
             return new Result.Failure<>(
@@ -83,37 +80,58 @@ public class AuthServiceAdapter implements AuthServicePort {
             );
         }
 
-        var refreshToken = new RefreshToken(
-                null,
-                authUser.getId(),
-                ((Result.Success<AccessJwt>) jwtResult).data().getRefreshToken(),
-                null,
-                null
-        );
-
-        var refreshTokenResult = this.refreshTokenService.save(refreshToken);
-
-        if (refreshTokenResult instanceof Result.Failure<RefreshToken> (
-                int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
-        )) {
-            return new Result.Failure<>(
-                    errorCode,
-                    errorMsg,
-                    errorDetails,
-                    exception
-            );
-        }
-
-        return jwtResult;
+        return jwtService.getAccessJwt(authUser.getId(), authUser.getEmail(), authUser.getRoles());
     }
 
     @Override
-    public Result<RefreshToken> refresh(RefreshTokenPetition refreshTokenPetition) {
-        return this.refreshTokenService.refresh(refreshTokenPetition);
+    public Result<AccessJwt> refresh(RefreshTokenPetition refreshTokenPetition) {
+        var refreshToken = refreshTokenPetition.getRefreshToken();
+        var refreshTokenResult = jwtService.isNotExpiredAndNotRevoked(refreshToken);
+
+        if (refreshTokenResult instanceof Result.Failure<RefreshToken>(
+                int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
+        )) {
+            return new Result.Failure<>(
+                    errorCode,
+                    errorMsg,
+                    errorDetails,
+                    exception
+            );
+        }
+        var userId = ((Result.Success<RefreshToken>) refreshTokenResult).data().getUserId();
+        var revokeAllResult = jwtService.revokeAll(userId);
+
+        if (revokeAllResult instanceof Result.Failure<Void>(
+                int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
+        )) {
+            return new Result.Failure<>(
+                    errorCode,
+                    errorMsg,
+                    errorDetails,
+                    exception
+            );
+        }
+
+        var userResult = this.userService.getUserById(userId);
+
+        if (userResult instanceof Result.Failure<User>(
+                int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
+        )) {
+            return new Result.Failure<>(
+                    errorCode,
+                    errorMsg,
+                    errorDetails,
+                    exception
+            );
+        }
+
+        var user = ((Result.Success<User>) userResult).data();
+
+        return this.jwtService.getAccessJwt(userId, user.getEmail(), user.getRoles());
     }
 
     @Override
     public Result<Void> logout(Long userId) {
-        return this.refreshTokenService.revokeByUserId(userId);
+        return jwtService.revokeAll(userId);
     }
 }

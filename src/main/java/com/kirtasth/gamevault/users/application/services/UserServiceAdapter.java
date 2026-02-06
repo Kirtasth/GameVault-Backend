@@ -4,13 +4,17 @@ import com.kirtasth.gamevault.common.models.enums.RoleEnum;
 import com.kirtasth.gamevault.common.models.page.Page;
 import com.kirtasth.gamevault.common.models.page.PageRequest;
 import com.kirtasth.gamevault.common.models.util.Result;
-import com.kirtasth.gamevault.users.domain.models.*;
+import com.kirtasth.gamevault.users.domain.models.NewUser;
+import com.kirtasth.gamevault.users.domain.models.Role;
+import com.kirtasth.gamevault.users.domain.models.User;
+import com.kirtasth.gamevault.users.domain.models.UserCriteria;
 import com.kirtasth.gamevault.users.domain.ports.in.UserServicePort;
 import com.kirtasth.gamevault.users.domain.ports.out.UserRepoPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -80,4 +84,51 @@ public class UserServiceAdapter implements UserServicePort {
     public List<Role> getRolesByUserId(Long userId) {
         return this.userRepo.findRolesByUserId(userId);
     }
+
+    @Override
+    public Result<Boolean> canCreateGames(Long userId) {
+        var roles = this.getRolesByUserId(userId);
+
+        return new Result.Success<>(roles.stream()
+                .map(Role::getRole)
+                .anyMatch(
+                        role -> role == RoleEnum.ADMIN || role == RoleEnum.DEVELOPER
+                ));
+    }
+
+    @Override
+    public Result<Boolean> isDeveloper(String email) {
+        var userRes = this.userRepo.findUserByEmail(email);
+
+        if (userRes instanceof Result.Failure<User>(
+                int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
+        )) {
+            return new Result.Failure<>(errorCode, errorMsg, errorDetails, exception);
+        }
+
+        var user = ((Result.Success<User>) userRes).data();
+
+        if (user.getRoles().stream()
+                .anyMatch(role -> role.getRole() == RoleEnum.DEVELOPER)) {
+            return new Result.Success<>(true);
+        }
+
+        return new Result.Success<>(false);
+    }
+
+    @Override
+    public Result<Long> getUserId(String email) {
+        var userRes = this.userRepo.findUserByEmail(email);
+
+        if (userRes instanceof Result.Failure<User>(
+                int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
+        )) {
+            return new Result.Failure<>(errorCode, errorMsg, errorDetails, exception);
+        }
+
+        var user = ((Result.Success<User>) userRes).data();
+
+        return new Result.Success<>(user.getId());
+    }
+
 }

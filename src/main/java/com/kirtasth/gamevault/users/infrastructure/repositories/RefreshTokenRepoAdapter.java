@@ -34,45 +34,17 @@ public class RefreshTokenRepoAdapter implements RefreshTokenRepoPort {
     }
 
     @Override
-    public Result<RefreshToken> save(RefreshToken refreshToken) {
-        var savedRefreshToken = this.refreshTokenRepository.save(this.authMapper.toRefreshTokenEntity(refreshToken));
-
-        return new Result.Success<>(this.authMapper.toRefreshToken(savedRefreshToken));
+    public void revokeAllByUserId(Long userId) {
+        this.refreshTokenRepository.findAllByUserIdAndRevokedAtIsNull(userId).forEach(
+                refreshTokenEntity -> {
+                    refreshTokenEntity.setRevokedAt(Instant.now());
+                    this.refreshTokenRepository.save(refreshTokenEntity);
+                }
+        );
     }
 
     @Override
-    public Result<Void> revoke(String token) {
-        var refreshToken = this.refreshTokenRepository.findByToken(token);
-
-        if (refreshToken.isEmpty()) {
-            return new Result.Failure<>(
-                    400,
-                    "Could not revoke token",
-                    Map.of("details", "Token not found"),
-                    null
-            );
-        }
-        refreshToken.get().setRevokedAt(Instant.now());
-        this.refreshTokenRepository.save(refreshToken.get());
-
-        return new Result.Success<>(null);
-    }
-
-    @Override
-    public Result<Void> revokeByUserId(Long userId) {
-        var refreshToken = this.refreshTokenRepository.findFirstByUserIdOrderByCreatedAtDesc(userId);
-        if (refreshToken.isEmpty()) {
-            return new Result.Failure<>(
-                    404,
-                    "Could not revoke token",
-                    Map.of("details", "Token not found"),
-                    null
-            );
-        }
-
-        refreshToken.get().setRevokedAt(Instant.now());
-        this.refreshTokenRepository.save(refreshToken.get());
-
-        return new Result.Success<>(null);
+    public void save(RefreshToken refreshToken) {
+        this.refreshTokenRepository.save(this.authMapper.toRefreshTokenEntity(refreshToken));
     }
 }

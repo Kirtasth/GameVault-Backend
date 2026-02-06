@@ -4,7 +4,6 @@ package com.kirtasth.gamevault.users.infrastructure.controllers;
 import com.kirtasth.gamevault.common.infrastructure.responses.ErrorResponse;
 import com.kirtasth.gamevault.common.models.util.Result;
 import com.kirtasth.gamevault.users.domain.models.AccessJwt;
-import com.kirtasth.gamevault.users.domain.models.RefreshToken;
 import com.kirtasth.gamevault.users.domain.ports.in.AuthServicePort;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.CredentialsRequest;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.NewUserRequest;
@@ -96,9 +95,9 @@ public class AuthController {
     public ResponseEntity<?> refresh(
             @RequestBody @Valid RefreshTokenPetitionRequest refreshTokenPetitionRequest
     ) {
-        var result = this.authService.refresh(this.authMapper.toRefreshTokenPetition(refreshTokenPetitionRequest));
+        var refreshResult = this.authService.refresh(this.authMapper.toRefreshTokenPetition(refreshTokenPetitionRequest));
 
-        if (result instanceof Result.Failure<RefreshToken>(
+        if (refreshResult instanceof Result.Failure (
                 int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
         )) {
             return new ResponseEntity<>(
@@ -114,12 +113,9 @@ public class AuthController {
             );
         }
 
-        var refreshToken = ((Result.Success<RefreshToken>) result).data();
+        var refresh = ((Result.Success<AccessJwt>) refreshResult).data();
 
-        return new ResponseEntity<>(
-                this.authMapper.toRefreshTokenResponse(refreshToken),
-                HttpStatus.CREATED
-        );
+        return ResponseEntity.ok(this.authMapper.toAccessJwtResponse(refresh));
     }
 
     @PostMapping("/{userId}/logout")

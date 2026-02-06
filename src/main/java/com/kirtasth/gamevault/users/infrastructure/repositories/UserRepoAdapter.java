@@ -24,7 +24,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -214,7 +213,7 @@ public class UserRepoAdapter implements UserRepoPort {
                             .findFirst().orElse(null))
                     .toList();
 
-            if (roleEntities.isEmpty() || roleEntities.stream().anyMatch(Objects::isNull)) {
+            if (roleEntities.isEmpty() || roleEntities.contains(null)) {
                 return new Result.Failure<>(
                         400,
                         "Error adding roles to user with id: " + id + ".",
@@ -278,5 +277,4 @@ public class UserRepoAdapter implements UserRepoPort {
     public User getReference(Long id) {
         return this.userMapper.toUser(this.userRepository.getReferenceById(id));
     }
-
 }

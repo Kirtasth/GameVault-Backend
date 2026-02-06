@@ -2,7 +2,7 @@ package com.kirtasth.gamevault.users.infrastructure.security;
 
 import com.kirtasth.gamevault.common.models.util.Result;
 import com.kirtasth.gamevault.users.domain.models.AuthUser;
-import com.kirtasth.gamevault.users.domain.ports.in.RefreshTokenServicePort;
+import com.kirtasth.gamevault.users.domain.ports.in.JwtServicePort;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +23,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final UserDetailsService userDetailsService;
-    private final RefreshTokenServicePort refreshTokenService;
+    private final JwtServicePort jwtService;
 
     @Override
     protected void doFilterInternal(
@@ -42,10 +42,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         jwt = authHeader.substring(7);
 
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            var validationResult = this.refreshTokenService.validate(jwt);
+            var validationResult = this.jwtService.isTokenValid(jwt);
 
             if (validationResult instanceof Result.Success) {
-                var userEmailRes = this.refreshTokenService.extractEmail(jwt);
+                var userEmailRes = this.jwtService.extractEmail(jwt);
 
                 if (userEmailRes instanceof Result.Success<String>) {
                     var userEmail = ((Result.Success<String>) userEmailRes).data();

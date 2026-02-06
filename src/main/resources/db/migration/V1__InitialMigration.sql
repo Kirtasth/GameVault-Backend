@@ -1,28 +1,15 @@
+/*
+
+    ############## AUTHORIZATION ##############
+
+*/
+
 CREATE SCHEMA "auth";
 
-CREATE SCHEMA "catalog";
-
-CREATE SCHEMA "cart";
-
-CREATE SCHEMA "checkout";
-
 CREATE TYPE "user_role" AS ENUM (
-  'USER',
-  'DEVELOPER',
-  'ADMIN'
-);
-
-CREATE TYPE "game_status" AS ENUM (
-  'PENDING_APPROVAL',
-  'APPROVED',
-  'REJECTED'
-);
-
-CREATE TYPE "order_status" AS ENUM (
-  'PENDING',
-  'PAID',
-  'FAILED',
-  'CANCELED'
+    'USER',
+    'DEVELOPER',
+    'ADMIN'
 );
 
 CREATE TABLE "auth"."users"
@@ -50,8 +37,8 @@ CREATE TABLE "auth"."roles"
     "id"          bigserial PRIMARY KEY,
     "role"        user_role UNIQUE NOT NULL,
     "description" text,
-    "created_at"  timestamp NOT NULL DEFAULT (now()),
-    "updated_at"  timestamp NOT NULL DEFAULT (now()),
+    "created_at"  timestamp           NOT NULL DEFAULT (now()),
+    "updated_at"  timestamp           NOT NULL DEFAULT (now()),
     "deleted_at"  timestamp
 );
 
@@ -82,6 +69,42 @@ CREATE TABLE "auth"."password_reset_tokens"
     "expires_at" timestamp           NOT NULL
 );
 
+ALTER TABLE "auth"."user_roles"
+    ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "auth"."user_roles"
+    ADD FOREIGN KEY ("role_id") REFERENCES "auth"."roles" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "auth"."refresh_tokens"
+    ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "auth"."password_reset_tokens"
+    ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+/*
+
+    ############## CATALOG ##############
+
+*/
+
+CREATE SCHEMA "catalog";
+
+CREATE TYPE "game_status" AS ENUM (
+    'PENDING_APPROVAL',
+    'APPROVED',
+    'REJECTED'
+);
+
+CREATE TABLE "catalog"."developers"
+(
+    "id"           bigint   PRIMARY KEY,
+    "name"         varchar(255) UNIQUE NOT NULL,
+    "description"  text,
+    "created_at"   timestamp           NOT NULL DEFAULT (now()),
+    "updated_at"   timestamp           NOT NULL DEFAULT (now()),
+    "deleted_at"   timestamp
+);
+
 CREATE TABLE "catalog"."games"
 (
     "id"           bigserial PRIMARY KEY,
@@ -89,24 +112,64 @@ CREATE TABLE "catalog"."games"
     "title"        varchar(255) UNIQUE NOT NULL,
     "description"  text,
     "price"        numeric             NOT NULL DEFAULT 0,
-    "release_data" date,
-    "status"       game_status         NOT NULL DEFAULT 'PENDING_APPROVAL',
+    "release_date" timestamp,
     "created_at"   timestamp           NOT NULL DEFAULT (now()),
     "updated_at"   timestamp           NOT NULL DEFAULT (now()),
     "deleted_at"   timestamp
 );
 
-CREATE TABLE "catalog"."game_tags"
+CREATE TABLE "catalog"."game_statuses"
 (
-    "id"   bigserial PRIMARY KEY,
-    "name" varchar(255) UNIQUE NOT NULL
+    "game_id"     bigint,
+    "status"      game_status NOT NULL DEFAULT ('PENDING_APPROVAL'),
+    "description" text,
+    "created_at"  timestamp   NOT NULL DEFAULT (now()),
+    "updated_at"  timestamp   NOT NULL DEFAULT (now()),
+    "deleted_at"  timestamp,
+
+    PRIMARY KEY ("game_id", "created_at")
 );
 
-CREATE TABLE "catalog"."game_game_tags"
+
+CREATE TABLE "catalog"."game_tags"
+(
+    "id"          bigserial PRIMARY KEY,
+    "name"        varchar(255) UNIQUE NOT NULL,
+    "description" text,
+    "created_at"  timestamp           NOT NULL DEFAULT (now()),
+    "updated_at"  timestamp           NOT NULL DEFAULT (now()),
+    "deleted_at"  timestamp
+);
+
+CREATE TABLE "catalog"."game_tags_assignments"
 (
     "game_id" bigint NOT NULL,
     "tag_id"  bigint NOT NULL
 );
+
+ALTER TABLE "catalog"."developers"
+    ADD FOREIGN KEY ("id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "catalog"."games"
+    ADD FOREIGN KEY ("developer_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "catalog"."game_statuses"
+    ADD FOREIGN KEY ("game_id") REFERENCES "catalog"."games" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "catalog"."game_tags_assignments"
+    ADD FOREIGN KEY ("game_id") REFERENCES "catalog"."games" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "catalog"."game_tags_assignments"
+    ADD FOREIGN KEY ("tag_id") REFERENCES "catalog"."game_tags" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+
+/*
+
+    ############## CART ##############
+
+*/
+
+CREATE SCHEMA "cart";
 
 CREATE TABLE "cart"."wishlist"
 (
@@ -129,6 +192,38 @@ CREATE TABLE "cart"."cart_items"
     "user_id"           bigint  NOT NULL,
     "game_id"           bigint  NOT NULL,
     "price_at_addition" numeric NOT NULL
+);
+
+ALTER TABLE "cart"."wishlist"
+    ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "cart"."wishlist"
+    ADD FOREIGN KEY ("game_id") REFERENCES "catalog"."games" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "cart"."shopping_carts"
+    ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "cart"."shopping_carts"
+    ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "cart"."cart_items"
+    ADD FOREIGN KEY ("game_id") REFERENCES "catalog"."games" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+
+/*
+
+    ############## CHECKOUT ##############
+
+*/
+
+CREATE SCHEMA "checkout";
+
+
+CREATE TYPE "order_status" AS ENUM (
+  'PENDING',
+  'PAID',
+  'FAILED',
+  'CANCELED'
 );
 
 CREATE TABLE "checkout"."orders"
@@ -165,44 +260,6 @@ CREATE TABLE "checkout"."user_purchased_games"
     "game_id" bigint,
     PRIMARY KEY ("user_id", "game_id")
 );
-
-
-
-ALTER TABLE "auth"."user_roles"
-    ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
-ALTER TABLE "auth"."user_roles"
-    ADD FOREIGN KEY ("role_id") REFERENCES "auth"."roles" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
-ALTER TABLE "auth"."refresh_tokens"
-    ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
-ALTER TABLE "auth"."password_reset_tokens"
-    ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
-ALTER TABLE "catalog"."games"
-    ADD FOREIGN KEY ("developer_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
-ALTER TABLE "catalog"."game_game_tags"
-    ADD FOREIGN KEY ("game_id") REFERENCES "catalog"."games" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
-ALTER TABLE "catalog"."game_game_tags"
-    ADD FOREIGN KEY ("tag_id") REFERENCES "catalog"."game_tags" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
-ALTER TABLE "cart"."wishlist"
-    ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
-ALTER TABLE "cart"."wishlist"
-    ADD FOREIGN KEY ("game_id") REFERENCES "catalog"."games" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
-ALTER TABLE "cart"."shopping_carts"
-    ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
-ALTER TABLE "cart"."shopping_carts"
-    ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
-ALTER TABLE "cart"."cart_items"
-    ADD FOREIGN KEY ("game_id") REFERENCES "catalog"."games" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE "checkout"."orders"
     ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
