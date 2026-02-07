@@ -4,6 +4,7 @@ import com.kirtasth.gamevault.catalog.domain.models.*;
 import com.kirtasth.gamevault.catalog.domain.ports.in.GameServicePort;
 import com.kirtasth.gamevault.catalog.domain.ports.out.GameRepoPort;
 import com.kirtasth.gamevault.catalog.domain.ports.out.UserValidationPort;
+import com.kirtasth.gamevault.common.models.enums.RoleEnum;
 import com.kirtasth.gamevault.common.models.page.Page;
 import com.kirtasth.gamevault.common.models.page.PageRequest;
 import com.kirtasth.gamevault.common.models.util.Result;
@@ -93,13 +94,26 @@ public class GameServiceAdapter implements GameServicePort {
 
     @Override
     public Result<Developer> registerDeveloper(NewDeveloper newDeveloper) {
+
+        var addRoleResult = this.userValidation.addRoles(newDeveloper.userId(), List.of(RoleEnum.DEVELOPER));
+
+        if (addRoleResult instanceof Result.Failure<Void>(
+                int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
+        )) {
+            return new Result.Failure<>(
+                    errorCode,
+                    errorMsg,
+                    errorDetails,
+                    exception
+            );
+        }
+
         var developer = Developer.builder()
                 .id(newDeveloper.userId())
                 .name(newDeveloper.name())
                 .description(newDeveloper.description())
                 .games(List.of())
                 .build();
-
         return gameRepo.saveDeveloper(developer);
     }
 }

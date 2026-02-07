@@ -19,7 +19,7 @@ public interface UserRepoPort {
     Result<Boolean> lockUserById(Long id, String reason);
     Result<Boolean> unlockUserById(Long id);
     Result<Boolean> deleteUserById(Long id);
-    Result<Boolean> addRolesToUser(Long id, List<RoleEnum> roleEnums);
+    Result<Void> addRolesToUser(Long id, List<RoleEnum> roleEnums);
     Result<Boolean> removeRolesFromUser(Long id, List<RoleEnum> roleEnums);
     List<Role> findRolesByUserId(Long userId);
     User getReference(Long id);

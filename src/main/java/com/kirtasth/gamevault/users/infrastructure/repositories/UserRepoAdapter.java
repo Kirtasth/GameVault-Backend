@@ -205,7 +205,7 @@ public class UserRepoAdapter implements UserRepoPort {
     }
 
     @Override
-    public Result<Boolean> addRolesToUser(Long id, List<RoleEnum> roleEnums) {
+    public Result<Void> addRolesToUser(Long id, List<RoleEnum> roleEnums) {
         try {
 
             var roleEntities = roleEnums.stream()
@@ -253,7 +253,7 @@ public class UserRepoAdapter implements UserRepoPort {
             );
         }
 
-        return new Result.Success<>(true);
+        return new Result.Success<>(null);
     }
 
     @Override

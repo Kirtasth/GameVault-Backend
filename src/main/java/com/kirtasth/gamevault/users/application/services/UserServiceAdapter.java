@@ -71,8 +71,8 @@ public class UserServiceAdapter implements UserServicePort {
     }
 
     @Override
-    public Result<Boolean> addRolesToUser(Long id, List<RoleEnum> roleEnums) {
-        return null;
+    public Result<Void> addRolesToUser(Long id, List<RoleEnum> roleEnums) {
+        return this.userRepo.addRolesToUser(id, roleEnums);
     }
 
     @Override

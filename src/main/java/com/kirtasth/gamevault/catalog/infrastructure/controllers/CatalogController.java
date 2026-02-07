@@ -15,6 +15,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/catalog")
@@ -76,6 +78,7 @@ public class CatalogController {
     public ResponseEntity<?> registerDeveloper(
             @RequestBody @Valid NewDeveloperRequest newDeveloperRequest
     ) {
+        log.info("Registering new developer with data: " + newDeveloperRequest.toString() + ".");
         var result = this.gameService.registerDeveloper(this.mapper.toNewDeveloper(newDeveloperRequest));
 
         if (result instanceof Result.Failure<Developer>(
