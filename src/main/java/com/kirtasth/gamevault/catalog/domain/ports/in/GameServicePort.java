@@ -15,5 +15,5 @@ public interface GameServicePort {
     Result<Game> addStatusList(Long gameId, List<GameStatus> gameStatuses);
     Result<Game> addTagList(Long gameId, List<GameTag> gameTags);
     Page<Game> listAll(PageRequest pageRequest, GameCriteria gameCriteria);
-    Result<Developer> registerDeveloper(NewDeveloper newDeveloper, String email);
+    Result<Developer> registerDeveloper(NewDeveloper newDeveloper);
 }

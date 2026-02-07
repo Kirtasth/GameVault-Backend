@@ -4,6 +4,7 @@ import lombok.Builder;
 
 @Builder
 public record NewDeveloper(
+        Long userId,
         String name,
         String description
 ) {

@@ -18,10 +18,6 @@ public class UserValidationAdapter implements UserValidationPort {
         return this.userService.canCreateGames(userId);
     }
 
-    @Override
-    public Result<Boolean> isDeveloper(String email) {
-        return this.userService.isDeveloper(email);
-    }
 
     @Override
     public Result<Long> getUserId(String email) {

@@ -35,7 +35,5 @@ public interface UserServicePort {
 
     Result<Boolean> canCreateGames(Long userId);
 
-    Result<Boolean> isDeveloper(String email);
-
     Result<Long> getUserId(String email);
 }

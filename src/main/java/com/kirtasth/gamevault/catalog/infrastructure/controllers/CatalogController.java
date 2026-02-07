@@ -11,6 +11,9 @@ import com.kirtasth.gamevault.common.infrastructure.PageMapper;
 import com.kirtasth.gamevault.common.infrastructure.responses.ErrorResponse;
 import com.kirtasth.gamevault.common.models.util.Result;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -71,11 +74,9 @@ public class CatalogController {
 
     @PostMapping("/register-developer")
     public ResponseEntity<?> registerDeveloper(
-            @RequestBody @Valid NewDeveloperRequest newDeveloperRequest,
-            Authentication authentication
+            @RequestBody @Valid NewDeveloperRequest newDeveloperRequest
     ) {
-        var userEmail = authentication.getPrincipal().toString();
-        var result = this.gameService.registerDeveloper(this.mapper.toNewDeveloper(newDeveloperRequest), userEmail);
+        var result = this.gameService.registerDeveloper(this.mapper.toNewDeveloper(newDeveloperRequest));
 
         if (result instanceof Result.Failure<Developer>(
                 int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception

@@ -97,26 +97,6 @@ public class UserServiceAdapter implements UserServicePort {
     }
 
     @Override
-    public Result<Boolean> isDeveloper(String email) {
-        var userRes = this.userRepo.findUserByEmail(email);
-
-        if (userRes instanceof Result.Failure<User>(
-                int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
-        )) {
-            return new Result.Failure<>(errorCode, errorMsg, errorDetails, exception);
-        }
-
-        var user = ((Result.Success<User>) userRes).data();
-
-        if (user.getRoles().stream()
-                .anyMatch(role -> role.getRole() == RoleEnum.DEVELOPER)) {
-            return new Result.Success<>(true);
-        }
-
-        return new Result.Success<>(false);
-    }
-
-    @Override
     public Result<Long> getUserId(String email) {
         var userRes = this.userRepo.findUserByEmail(email);
 

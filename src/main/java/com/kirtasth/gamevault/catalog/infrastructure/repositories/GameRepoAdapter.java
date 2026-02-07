@@ -113,6 +113,15 @@ public class GameRepoAdapter implements GameRepoPort {
 
     @Override
     public Result<Developer> saveDeveloper(Developer developer) {
+        if (developerRepository.existsById(developer.id())){
+            return new Result.Failure<>(
+                    409,
+                    "Developer already exists",
+                    null,
+                    null
+            );
+        }
+
         return new Result.Success<>(
                 mapper.toDeveloper(developerRepository.save(mapper.toDeveloperEntity(developer)))
         );

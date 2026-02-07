@@ -92,37 +92,9 @@ public class GameServiceAdapter implements GameServicePort {
     }
 
     @Override
-    public Result<Developer> registerDeveloper(NewDeveloper newDeveloper, String email) {
-        var isDevResult = this.userValidation.isDeveloper(email);
-
-        if (isDevResult instanceof Result.Failure<Boolean>(
-                int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
-        )) {
-            return new Result.Failure<>(errorCode, errorMsg, errorDetails, exception);
-        }
-
-        var isDev = ((Result.Success<Boolean>) isDevResult).data();
-
-        if (isDev) {
-            return new Result.Failure<>(
-                    403,
-                    "User is already a developer",
-                    null,
-                    null);
-        }
-
-        var userIdResult = this.userValidation.getUserId(email);
-
-        if (userIdResult instanceof Result.Failure<Long>(
-                int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
-        )) {
-            return new Result.Failure<>(errorCode, errorMsg, errorDetails, exception);
-        }
-
-        var userId = ((Result.Success<Long>) userIdResult).data();
-
+    public Result<Developer> registerDeveloper(NewDeveloper newDeveloper) {
         var developer = Developer.builder()
-                .id(userId)
+                .id(newDeveloper.userId())
                 .name(newDeveloper.name())
                 .description(newDeveloper.description())
                 .games(List.of())
