@@ -54,6 +54,9 @@ public class GameEntity {
     @Temporal(TemporalType.TIMESTAMP)
     private Instant releaseDate;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @Temporal(TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

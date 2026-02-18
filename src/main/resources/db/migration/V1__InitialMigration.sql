@@ -112,6 +112,7 @@ CREATE TABLE "catalog"."games"
     "title"        varchar(255) UNIQUE NOT NULL,
     "description"  text,
     "price"        numeric             NOT NULL DEFAULT 0,
+    "image_url"    varchar(512),
     "release_date" timestamp,
     "created_at"   timestamp           NOT NULL DEFAULT (now()),
     "updated_at"   timestamp           NOT NULL DEFAULT (now()),

@@ -2,15 +2,19 @@ package com.kirtasth.gamevault.catalog.infrastructure.repositories;
 
 import com.kirtasth.gamevault.catalog.domain.models.*;
 import com.kirtasth.gamevault.catalog.domain.ports.out.GameRepoPort;
+import com.kirtasth.gamevault.catalog.infrastructure.dtos.entities.GameEntity;
 import com.kirtasth.gamevault.catalog.infrastructure.mappers.CatalogMapper;
 import com.kirtasth.gamevault.catalog.infrastructure.repositories.jpa.DeveloperRepository;
 import com.kirtasth.gamevault.catalog.infrastructure.repositories.jpa.GameRepository;
 import com.kirtasth.gamevault.catalog.infrastructure.repositories.jpa.GameStatusRepository;
+import com.kirtasth.gamevault.catalog.infrastructure.specifications.GameEntitySpecification;
+import com.kirtasth.gamevault.common.infrastructure.PageMapper;
 import com.kirtasth.gamevault.common.models.enums.GameStatusEnum;
 import com.kirtasth.gamevault.common.models.page.Page;
 import com.kirtasth.gamevault.common.models.page.PageRequest;
 import com.kirtasth.gamevault.common.models.util.Result;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -23,6 +27,8 @@ public class GameRepoAdapter implements GameRepoPort {
     private final GameStatusRepository gameStatusRepository;
     private final DeveloperRepository developerRepository;
     private final CatalogMapper mapper;
+    private final PageMapper pageMapper;
+    private final GameEntitySpecification gameEntitySpecification;
 
     @Override
     public Result<Game> save(Game game) {
@@ -108,7 +114,20 @@ public class GameRepoAdapter implements GameRepoPort {
 
     @Override
     public Page<Game> findAll(PageRequest pageRequest, GameCriteria gameCriteria) {
-        return null;
+        var pageable = this.pageMapper.toSpring(pageRequest);
+
+        Specification<GameEntity> spec = Specification.allOf(
+                this.gameEntitySpecification.containsTitle(gameCriteria.title()),
+                this.gameEntitySpecification.containsDeveloper(gameCriteria.developerName()),
+                this.gameEntitySpecification.priceGreaterOrEqual(gameCriteria.minPrice()),
+                this.gameEntitySpecification.priceLessOrEqual(gameCriteria.maxPrice()),
+                this.gameEntitySpecification.releasedAfter(gameCriteria.fromReleaseTime()),
+                this.gameEntitySpecification.releasedBefore(gameCriteria.toReleaseTime()),
+                this.gameEntitySpecification.containsAllGameTags(gameCriteria.gameTags())
+        );
+
+        var page = this.gameRepository.findAll(spec, pageable).map(mapper::toGame);
+        return this.pageMapper.toDomain(page);
     }
 
     @Override

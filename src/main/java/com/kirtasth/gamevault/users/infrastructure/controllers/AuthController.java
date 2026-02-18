@@ -4,19 +4,19 @@ package com.kirtasth.gamevault.users.infrastructure.controllers;
 import com.kirtasth.gamevault.common.infrastructure.responses.ErrorResponse;
 import com.kirtasth.gamevault.common.models.util.Result;
 import com.kirtasth.gamevault.users.domain.models.AccessJwt;
+import com.kirtasth.gamevault.users.domain.models.AuthUser;
 import com.kirtasth.gamevault.users.domain.ports.in.AuthServicePort;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.CredentialsRequest;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.NewUserRequest;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.RefreshTokenPetitionRequest;
 import com.kirtasth.gamevault.users.infrastructure.mappers.AuthMapper;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -118,11 +118,11 @@ public class AuthController {
         return ResponseEntity.ok(this.authMapper.toAccessJwtResponse(refresh));
     }
 
-    @PostMapping("/{userId}/logout")
+    @PostMapping("/logout")
     public ResponseEntity<?> logout(
-            @PathVariable @NotNull @Min(1) Long userId
+            @AuthenticationPrincipal AuthUser user
     ) {
-        var logoutResult = this.authService.logout(userId);
+        var logoutResult = this.authService.logout(user.getId());
 
         if (logoutResult instanceof Result.Failure<Void>(
                 int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception

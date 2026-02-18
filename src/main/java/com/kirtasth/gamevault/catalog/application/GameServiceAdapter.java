@@ -3,6 +3,7 @@ package com.kirtasth.gamevault.catalog.application;
 import com.kirtasth.gamevault.catalog.domain.models.*;
 import com.kirtasth.gamevault.catalog.domain.ports.in.GameServicePort;
 import com.kirtasth.gamevault.catalog.domain.ports.out.GameRepoPort;
+import com.kirtasth.gamevault.catalog.domain.ports.out.ImageStoragePort;
 import com.kirtasth.gamevault.catalog.domain.ports.out.UserValidationPort;
 import com.kirtasth.gamevault.common.models.enums.RoleEnum;
 import com.kirtasth.gamevault.common.models.page.Page;
@@ -20,6 +21,7 @@ public class GameServiceAdapter implements GameServicePort {
 
     private final GameRepoPort gameRepo;
     private final UserValidationPort userValidation;
+    private final ImageStoragePort imageStorage;
 
     @Override
     public Result<Game> create(NewGame newGame) {
@@ -47,6 +49,14 @@ public class GameServiceAdapter implements GameServicePort {
             );
         }
 
+        String imageUrl = null;
+        if (newGame.image() != null) {
+            var uploadResult = imageStorage.upload(newGame.image(), newGame.title());
+            if (uploadResult instanceof Result.Success<String>(String data)) {
+                imageUrl = data;
+            }
+        }
+
         var game = Game.builder()
                 .developerId(newGame.developerId())
                 .title(newGame.title())
@@ -55,6 +65,7 @@ public class GameServiceAdapter implements GameServicePort {
                 .gameStatuses(List.of())
                 .tags(List.of())
                 .releaseDate(newGame.releaseDate())
+                .imageUrl(imageUrl)
                 .build();
 
         return gameRepo.save(game);
@@ -88,8 +99,7 @@ public class GameServiceAdapter implements GameServicePort {
 
     @Override
     public Page<Game> listAll(PageRequest pageRequest, GameCriteria gameCriteria) {
-
-        return null;
+        return gameRepo.findAll(pageRequest, gameCriteria);
     }
 
     @Override

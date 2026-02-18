@@ -8,13 +8,12 @@ import com.kirtasth.gamevault.users.infrastructure.dtos.requests.CredentialsRequ
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.NewUserRequest;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.RefreshTokenPetitionRequest;
 import com.kirtasth.gamevault.users.infrastructure.dtos.responses.AccessJwtResponse;
-import com.kirtasth.gamevault.users.infrastructure.dtos.responses.RefreshTokenResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING,
-uses = {UserEntityResolver.class})
+        uses = {UserEntityResolver.class})
 public interface AuthMapper {
 
     Credentials toCredentials(CredentialsRequest credentialsRequest);

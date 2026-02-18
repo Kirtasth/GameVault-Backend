@@ -10,7 +10,7 @@ spring:
         refresh-expiration: 8_640_000
 
   datasource:
-    url: ${POSTGRES_URL}
+    url: jdbc:postgresql://localhost:5432/gamevault_db
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -25,3 +25,7 @@ spring:
     init:
       mode: always
 
+cloudinary:
+  cloud_name: ${CLOUDINARY_CLOUD_NAME}
+  api_key: ${CLOUDINARY_API_KEY}
+  api_secret: ${CLOUDINARY_API_SECRET}

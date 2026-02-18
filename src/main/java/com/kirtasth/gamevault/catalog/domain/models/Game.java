@@ -17,7 +17,8 @@ public record Game(
         Instant releaseDate,
         Instant createdAt,
         Instant updatedAt,
-        Instant deletedAt
+        Instant deletedAt,
+        String imageUrl
 ) {
 
 }

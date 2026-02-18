@@ -7,6 +7,7 @@ public record NewGame(
         String title,
         String description,
         Double price,
-        Instant releaseDate
+        Instant releaseDate,
+        byte[] image
 ) {
 }
