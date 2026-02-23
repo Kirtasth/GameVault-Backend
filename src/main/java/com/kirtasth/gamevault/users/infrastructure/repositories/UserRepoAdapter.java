@@ -4,7 +4,10 @@ import com.kirtasth.gamevault.common.infrastructure.PageMapper;
 import com.kirtasth.gamevault.common.models.enums.RoleEnum;
 import com.kirtasth.gamevault.common.models.page.Page;
 import com.kirtasth.gamevault.common.models.page.PageRequest;
-import com.kirtasth.gamevault.common.models.util.Result;
+import com.kirtasth.gamevault.users.application.exception.RoleAssignmentException;
+import com.kirtasth.gamevault.users.application.exception.RoleNotFoundException;
+import com.kirtasth.gamevault.users.application.exception.UserAlreadyRegisteredException;
+import com.kirtasth.gamevault.users.application.exception.UserNotFoundException;
 import com.kirtasth.gamevault.users.domain.models.Role;
 import com.kirtasth.gamevault.users.domain.models.User;
 import com.kirtasth.gamevault.users.domain.models.UserCriteria;
@@ -23,7 +26,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -38,36 +40,17 @@ public class UserRepoAdapter implements UserRepoPort {
     private final UserEntitySpecification userEntitySpecification;
 
     @Override
-    public Result<User> findUserById(Long id) {
-        var dbUser = this.userRepository.findById(id).map(userMapper::toUser);
-
-        if (dbUser.isEmpty()) {
-            return new Result.Failure<>(
-                    404,
-                    "User with id: " + id + " not found.",
-                    null,
-                    null
-            );
-        }
-
-        return new Result.Success<>(dbUser.get());
+    public User findUserById(Long id) throws UserNotFoundException {
+        return this.userRepository.findById(id).map(userMapper::toUser).orElseThrow(
+                () -> new UserNotFoundException(id.toString())
+        );
     }
 
     @Override
-    public Result<User> findUserByEmail(String email) {
-        var dbUser = this.userRepository.findByEmail(email)
-                .map(userMapper::toUser);
-
-        if (dbUser.isEmpty()) {
-            return new Result.Failure<>(
-                    404,
-                    "User with email: " + email + " not found.",
-                    null,
-                    null
-            );
-        }
-
-        return new Result.Success<>(dbUser.get());
+    public User findUserByEmail(String email) throws UserNotFoundException {
+        return this.userRepository.findByEmail(email).map(userMapper::toUser).orElseThrow(
+                () -> new UserNotFoundException(email)
+        );
     }
 
     @Override
@@ -98,167 +81,53 @@ public class UserRepoAdapter implements UserRepoPort {
     }
 
     @Override
-    public Result<User> saveUser(User user) {
+    public Role findRole(RoleEnum role) throws RoleNotFoundException {
+        return this.roleRepository.findByRole(role).map(this.userMapper::toRole).orElseThrow(
+                () -> new RoleNotFoundException(role)
+        );
+    }
+
+    @Override
+    public User saveUser(User user) throws UserAlreadyRegisteredException {
         try {
-            var dbUser = this.userRepository.save(this.userMapper.toUserEntity(user));
-
-            var defaultRoles = List.of(RoleEnum.USER);
-
-            var res = this.addRolesToUser(dbUser.getId(), defaultRoles);
-
-            if (res instanceof Result.Failure) {
-                return new Result.Failure<>(
-                        400,
-                        "Error saving user.",
-                        Map.of("roles", "Error adding default roles to user."),
-                        null
-                );
-            }
-
-            return new Result.Success<>(this.userMapper.toUser(dbUser));
+            return this.userMapper.toUser(this.userRepository.save(this.userMapper.toUserEntity(user)));
         } catch (DataIntegrityViolationException e) {
-            return new Result.Failure<>(
-                    400,
-                    "Error saving user.",
-                    null,
-                    e
-            );
+            throw new UserAlreadyRegisteredException();
         }
     }
 
     @Override
-    public Result<Boolean> lockUserById(Long id, String reason) {
-
-        try {
-            var locked = this.userRepository.lockUserById(id, reason);
-
-            if (!locked) {
-                return new Result.Failure<>(
-                        400,
-                        "Error locking user with id: " + id + ".",
-                        null,
-                        null
-                );
-            }
-
-            return new Result.Success<>(true);
-        } catch (DataIntegrityViolationException e) {
-            return new Result.Failure<>(
-                    400,
-                    "Error locking user with id: " + id + ".",
-                    null,
-                    e
-            );
-        }
-    }
-
-    @Override
-    public Result<Boolean> unlockUserById(Long id) {
-
-        try {
-            var unlocked = this.userRepository.unlockUserById(id);
-
-            if (!unlocked) {
-                return new Result.Failure<>(
-                        400,
-                        "Error unlocking user with id: " + id + ".",
-                        null,
-                        null
-                );
-            }
-
-            return new Result.Success<>(true);
-        } catch (DataIntegrityViolationException e) {
-            return new Result.Failure<>(
-                    400,
-                    "Error unlocking user with id: " + id + ".",
-                    null,
-                    e
-            );
-        }
-    }
-
-    @Override
-    public Result<Boolean> deleteUserById(Long id) {
-
-        try {
-            var deleted = this.userRepository.softDeleteUserById(id);
-
-            if (!deleted) {
-                return new Result.Failure<>(
-                        400,
-                        "Error deleting user with id: " + id + ".",
-                        null,
-                        null
-                );
-            }
-
-            return new Result.Success<>(true);
-        } catch (DataIntegrityViolationException e) {
-            return new Result.Failure<>(
-                    400,
-                    "Error deleting user with id: " + id + ".",
-                    null,
-                    e
-            );
-        }
-    }
-
-    @Override
-    public Result<Void> addRolesToUser(Long id, List<RoleEnum> roleEnums) {
+    public User addRolesToUser(Long id, List<RoleEnum> roleEnums) throws RoleNotFoundException, RoleAssignmentException, UserNotFoundException {
         try {
 
-            var roleEntities = roleEnums.stream()
-                    .map(role -> this.roleRepository.findByRole(role).stream()
-                            .findFirst().orElse(null))
+            var roles = roleEnums.stream()
+                    .map(role -> this.roleRepository.findByRole(role)
+                            .orElseThrow(
+                                    () -> new RoleNotFoundException(role)))
                     .toList();
 
-            if (roleEntities.isEmpty() || roleEntities.contains(null)) {
-                return new Result.Failure<>(
-                        400,
-                        "Error adding roles to user with id: " + id + ".",
-                        Map.of("roles", "One or more roles where not found."),
-                        null
-                );
-            }
+            var user = this.userRepository.findById(id)
+                    .orElseThrow(
+                            () -> new UserNotFoundException(id.toString()));
 
-            var userEntity = this.userRepository.findById(id);
-
-            if (userEntity.isEmpty()) {
-                return new Result.Failure<>(
-                        400,
-                        "Error adding roles to user with id: " + id + ".",
-                        Map.of("user", "User was not found."),
-                        null
-                );
-            }
-
-
-            roleEntities.forEach(
+            roles.forEach(
                     role -> {
                         var newUserRole = new UserRoleEntity();
                         newUserRole.setId(new UserRoleKey(id, role.getId()));
-                        newUserRole.setUser(userEntity.get());
+                        newUserRole.setUser(user);
                         newUserRole.setRole(role);
 
                         this.userRoleRepository.save(newUserRole);
                     }
             );
-        } catch (Exception e) {
-            return new Result.Failure<>(
-                    400,
-                    "Error adding roles to user with id: " + id + ".",
-                    null,
-                    e
-            );
+
+            return this.userRepository.findById(id)
+                    .map(userMapper::toUser)
+                    .orElseThrow(
+                            () -> new UserNotFoundException(id.toString()));
+        } catch (DataIntegrityViolationException e) {
+            throw new RoleAssignmentException(id, roleEnums);
         }
-
-        return new Result.Success<>(null);
-    }
-
-    @Override
-    public Result<Boolean> removeRolesFromUser(Long id, List<RoleEnum> roleEnums) {
-        return null;
     }
 
     @Override
@@ -273,8 +142,4 @@ public class UserRepoAdapter implements UserRepoPort {
                 .toList();
     }
 
-    @Override
-    public User getReference(Long id) {
-        return this.userMapper.toUser(this.userRepository.getReferenceById(id));
-    }
 }

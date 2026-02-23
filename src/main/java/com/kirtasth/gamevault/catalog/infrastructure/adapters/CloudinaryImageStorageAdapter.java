@@ -2,8 +2,8 @@ package com.kirtasth.gamevault.catalog.infrastructure.adapters;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.kirtasth.gamevault.catalog.application.exception.CloudinaryImageUploadException;
 import com.kirtasth.gamevault.catalog.domain.ports.out.ImageStoragePort;
-import com.kirtasth.gamevault.common.models.util.Result;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,18 +16,7 @@ public class CloudinaryImageStorageAdapter implements ImageStoragePort {
     private final Cloudinary cloudinary;
 
     @Override
-    public Result<String> upload(byte[] image, String name) {
-        try {
-            var uploadResult = cloudinary.uploader().upload(image, ObjectUtils.asMap("public_id", name));
-            return new Result.Success<>((String) uploadResult.get("url"));
-        } catch (IOException e) {
-            return new Result.Failure<>(500, "Error uploading image", null, e);
-        }
-    }
-
-    @Override
-    public Result<String> uploadAvatar(byte[] image, String name, Long userId) {
-
+    public String uploadAvatar(byte[] image, String name, Long userId) throws CloudinaryImageUploadException {
         try {
             var options = ObjectUtils.asMap(
                     "folder", "gamevault/users/" + userId,
@@ -39,16 +28,14 @@ public class CloudinaryImageStorageAdapter implements ImageStoragePort {
             );
 
             var uploadResult = cloudinary.uploader().upload(image, options);
-            return new Result.Success<>(uploadResult.get("secure_url").toString());
-
+            return uploadResult.get("secure_url").toString();
         } catch (IOException e) {
-            return new Result.Failure<>(500, "Error uploading image", null, e);
+            throw new CloudinaryImageUploadException("/users/" + userId + "/avatar");
         }
     }
 
     @Override
-    public Result<String> uploadGameMainImage(byte[] image, String name, Long gameId) {
-
+    public String uploadGameMainImage(byte[] image, Long gameId) throws CloudinaryImageUploadException {
         try {
             var options = ObjectUtils.asMap(
                     "folder", "gamevault/games/" + gameId,
@@ -59,12 +46,9 @@ public class CloudinaryImageStorageAdapter implements ImageStoragePort {
             );
 
             var uploadResult = cloudinary.uploader().upload(image, options);
-            return new Result.Success<>(uploadResult.get("secure_url").toString());
-
+            return uploadResult.get("secure_url").toString();
         } catch (IOException e) {
-            return new Result.Failure<>(500, "Error uploading image", null, e);
+            throw new CloudinaryImageUploadException("/games/" + gameId + "/main_image");
         }
     }
-
-
 }

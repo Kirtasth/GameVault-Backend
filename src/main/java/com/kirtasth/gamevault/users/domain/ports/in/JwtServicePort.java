@@ -13,7 +13,7 @@ public interface JwtServicePort {
 
     Result<RefreshToken> isNotExpiredAndNotRevoked(String refreshToken);
 
-    Result<Void> revokeAll(Long userId);
+    void revokeAll(Long userId);
 
     Result<String> extractEmail(String token);
 

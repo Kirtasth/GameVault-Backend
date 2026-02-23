@@ -14,9 +14,8 @@ public class AuthProviderAdapter implements AuthProviderPort {
     private final AuthenticationProvider authenticationProvider;
 
     @Override
-    public Result<Authentication> authenticate(Authentication authentication) {
+    public Authentication authenticate(Authentication authentication) {
 
-        var res = this.authenticationProvider.authenticate(authentication);
-        return new Result.Success<>(res);
+        return this.authenticationProvider.authenticate(authentication);
     }
 }

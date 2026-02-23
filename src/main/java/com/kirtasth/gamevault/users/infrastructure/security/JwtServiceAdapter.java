@@ -92,9 +92,8 @@ public class JwtServiceAdapter implements JwtServicePort {
     }
 
     @Override
-    public Result<Void> revokeAll(Long userId) {
+    public void revokeAll(Long userId) {
         this.refreshTokenRepository.revokeAllByUserId(userId);
-        return new Result.Success<>(null);
     }
 
     @Override

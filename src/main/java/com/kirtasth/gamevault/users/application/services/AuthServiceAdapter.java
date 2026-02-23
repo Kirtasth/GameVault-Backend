@@ -25,23 +25,10 @@ public class AuthServiceAdapter implements AuthServicePort {
     private final JwtServicePort jwtService;
 
     @Override
-    public Result<Void> registerUser(NewUser newUser) {
+    public User registerUser(NewUser newUser) {
         newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
 
-        var savedUser = userService.saveUser(newUser);
-
-        if (savedUser instanceof Result.Failure<User>(
-                int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
-        )) {
-            return new Result.Failure<>(
-                    errorCode,
-                    errorMsg,
-                    errorDetails,
-                    exception
-            );
-        }
-
-        return new Result.Success<>(null);
+        return this.userService.saveUser(newUser);
     }
 
 
@@ -50,35 +37,11 @@ public class AuthServiceAdapter implements AuthServicePort {
         var email = credentials.getEmail();
         var password = credentials.getPassword();
 
-        var authentication = new UsernamePasswordAuthenticationToken(email, password, List.of());
-        var authenticationAuthenticatedResult = authProvider.authenticate(authentication);
+        var authenticationToken = new UsernamePasswordAuthenticationToken(email, password, List.of());
+        var authentication = authProvider.authenticate(authenticationToken);
+        var authUser = (AuthUser) authentication.getPrincipal();
 
-        if (authenticationAuthenticatedResult instanceof Result.Failure<Authentication>(
-                int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
-        )) {
-            return new Result.Failure<>(
-                    errorCode,
-                    errorMsg,
-                    errorDetails,
-                    exception
-            );
-        }
-
-        var auth = ((Result.Success<Authentication>) authenticationAuthenticatedResult).data();
-
-        var authUser = (AuthUser) auth.getPrincipal();
-
-        var revokeResult = this.jwtService.revokeAll(authUser.getId());
-        if (revokeResult instanceof Result.Failure<Void>(
-                int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
-        )) {
-            return new Result.Failure<>(
-                    errorCode,
-                    errorMsg,
-                    errorDetails,
-                    exception
-            );
-        }
+        this.jwtService.revokeAll(authUser.getId());
 
         return jwtService.getAccessJwt(authUser.getId(), authUser.getEmail(), authUser.getRoles());
     }

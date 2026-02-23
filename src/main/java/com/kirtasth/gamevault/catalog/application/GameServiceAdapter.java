@@ -8,12 +8,10 @@ import com.kirtasth.gamevault.catalog.domain.ports.out.UserValidationPort;
 import com.kirtasth.gamevault.common.models.enums.RoleEnum;
 import com.kirtasth.gamevault.common.models.page.Page;
 import com.kirtasth.gamevault.common.models.page.PageRequest;
-import com.kirtasth.gamevault.common.models.util.Result;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -24,39 +22,7 @@ public class GameServiceAdapter implements GameServicePort {
     private final ImageStoragePort imageStorage;
 
     @Override
-    public Result<Game> create(NewGame newGame) {
-        var canCreateGamesRes = this.userValidation.canCreateGames(newGame.developerId());
-
-        if (canCreateGamesRes instanceof Result.Failure<Boolean>(
-                int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
-        )) {
-            return new Result.Failure<>(
-                    errorCode,
-                    errorMsg,
-                    errorDetails,
-                    exception
-            );
-        }
-
-        var canCreateGames = ((Result.Success<Boolean>) canCreateGamesRes).data();
-
-        if (!canCreateGames) {
-            return new Result.Failure<>(
-                    403,
-                    "User is not developer or admin",
-                    null,
-                    null
-            );
-        }
-
-        String imageUrl = null;
-        if (newGame.image() != null) {
-            var uploadResult = imageStorage.upload(newGame.image(), newGame.title());
-            if (uploadResult instanceof Result.Success<String>(String data)) {
-                imageUrl = data;
-            }
-        }
-
+    public Game create(NewGame newGame) {
         var game = Game.builder()
                 .developerId(newGame.developerId())
                 .title(newGame.title())
@@ -65,36 +31,22 @@ public class GameServiceAdapter implements GameServicePort {
                 .gameStatuses(List.of())
                 .tags(List.of())
                 .releaseDate(newGame.releaseDate())
-                .imageUrl(imageUrl)
+                .imageUrl(null)
                 .build();
 
-        return gameRepo.save(game);
+        var savedGame = gameRepo.save(game);
+
+        if (newGame.image() != null) {
+            var imageUrl = imageStorage.uploadGameMainImage(newGame.image(), savedGame.id());
+
+            gameRepo.updateImageUrl(savedGame.id(), imageUrl);
+        }
+        return savedGame;
     }
 
     @Override
-    public Result<GameStatus> createStatus(NewGameStatus newGameStatus) {
-        var gameStatus = GameStatus.builder()
-                .gameId(newGameStatus.gameId())
-                .status(newGameStatus.status())
-                .description(newGameStatus.description())
-                .build();
-
-        return null;
-    }
-
-    @Override
-    public Result<Game> findById(Long id) {
+    public Game findById(Long id) {
         return gameRepo.findById(id);
-    }
-
-    @Override
-    public Result<Game> addStatusList(Long gameId, List<GameStatus> gameStatuses) {
-        return gameRepo.addStatusList(gameId, gameStatuses);
-    }
-
-    @Override
-    public Result<Game> addTagList(Long gameId, List<GameTag> gameTags) {
-        return gameRepo.addTagList(gameId, gameTags);
     }
 
     @Override
@@ -103,20 +55,9 @@ public class GameServiceAdapter implements GameServicePort {
     }
 
     @Override
-    public Result<Developer> registerDeveloper(NewDeveloper newDeveloper) {
+    public Developer registerDeveloper(NewDeveloper newDeveloper) {
 
-        var addRoleResult = this.userValidation.addRoles(newDeveloper.userId(), List.of(RoleEnum.DEVELOPER));
-
-        if (addRoleResult instanceof Result.Failure<Void>(
-                int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
-        )) {
-            return new Result.Failure<>(
-                    errorCode,
-                    errorMsg,
-                    errorDetails,
-                    exception
-            );
-        }
+        this.userValidation.addRoles(newDeveloper.userId(), List.of(RoleEnum.DEVELOPER));
 
         var developer = Developer.builder()
                 .id(newDeveloper.userId())

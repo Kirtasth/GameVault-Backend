@@ -7,7 +7,6 @@ import com.kirtasth.gamevault.catalog.domain.ports.in.DeveloperServicePort;
 import com.kirtasth.gamevault.catalog.domain.ports.out.DeveloperRepoPort;
 import com.kirtasth.gamevault.common.models.page.Page;
 import com.kirtasth.gamevault.common.models.page.PageRequest;
-import com.kirtasth.gamevault.common.models.util.Result;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +19,7 @@ public class DeveloperServiceAdapter implements DeveloperServicePort {
     private final DeveloperRepoPort developerRepo;
 
     @Override
-    public Result<Developer> createDeveloper(NewDeveloper newDeveloper) {
+    public Developer createDeveloper(NewDeveloper newDeveloper) {
         var dev = Developer.builder()
                 .name(newDeveloper.name())
                 .description(newDeveloper.description())
@@ -28,11 +27,6 @@ public class DeveloperServiceAdapter implements DeveloperServicePort {
                 .build();
 
         return developerRepo.save(dev);
-    }
-
-    @Override
-    public Result<Developer> updateDeveloper(Developer developer) {
-        return developerRepo.save(developer);
     }
 
     @Override

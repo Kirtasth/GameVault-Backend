@@ -1,5 +1,9 @@
 package com.kirtasth.gamevault.catalog.infrastructure.repositories;
 
+import com.kirtasth.gamevault.catalog.application.exception.DeveloperAlreadyExistsException;
+import com.kirtasth.gamevault.catalog.application.exception.GameAlreadyExistsException;
+import com.kirtasth.gamevault.catalog.application.exception.GameNotFoundException;
+import com.kirtasth.gamevault.catalog.application.exception.GameUpdateException;
 import com.kirtasth.gamevault.catalog.domain.models.*;
 import com.kirtasth.gamevault.catalog.domain.ports.out.GameRepoPort;
 import com.kirtasth.gamevault.catalog.infrastructure.dtos.entities.GameEntity;
@@ -9,15 +13,12 @@ import com.kirtasth.gamevault.catalog.infrastructure.repositories.jpa.GameReposi
 import com.kirtasth.gamevault.catalog.infrastructure.repositories.jpa.GameStatusRepository;
 import com.kirtasth.gamevault.catalog.infrastructure.specifications.GameEntitySpecification;
 import com.kirtasth.gamevault.common.infrastructure.PageMapper;
-import com.kirtasth.gamevault.common.models.enums.GameStatusEnum;
 import com.kirtasth.gamevault.common.models.page.Page;
 import com.kirtasth.gamevault.common.models.page.PageRequest;
-import com.kirtasth.gamevault.common.models.util.Result;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
@@ -31,85 +32,19 @@ public class GameRepoAdapter implements GameRepoPort {
     private final GameEntitySpecification gameEntitySpecification;
 
     @Override
-    public Result<Game> save(Game game) {
-        return new Result.Success<>(
-                mapper.toGame(gameRepository.save(mapper.toGameEntity(game)))
-        );
-    }
-
-    @Override
-    public Result<GameStatus> saveStatus(GameStatus gameStatus) {
-        return new Result.Success<>(
-                mapper.toGameStatus(gameStatusRepository.save(mapper.toGameStatusEntity(gameStatus)))
-        );
-    }
-
-    @Override
-    public Result<Game> findById(Long id) {
-        var gameEntity = gameRepository.findById(id);
-        if (gameEntity.isPresent()) {
-            return new Result.Success<>(mapper.toGame(gameEntity.get()));
+    public Game save(Game game) throws GameAlreadyExistsException {
+        try {
+            return mapper.toGame(gameRepository.save(mapper.toGameEntity(game)));
+        } catch (DataIntegrityViolationException e) {
+            throw new GameAlreadyExistsException(game.id());
         }
+    }
 
-        return new Result.Failure<>(
-                404,
-                "Game not found",
-                null,
-                null
+    @Override
+    public Game findById(Long id) throws GameNotFoundException {
+        return gameRepository.findById(id).map(mapper::toGame).orElseThrow(
+                () -> new GameNotFoundException(id)
         );
-    }
-
-    @Override
-    public Result<GameStatus> findByStatusEnum(GameStatusEnum status) {
-        var gameEntityOpt = gameStatusRepository.findByStatus(status);
-
-        if (gameEntityOpt.isEmpty()) {
-            return new Result.Failure<>(
-                    404,
-                    "Game status not found",
-                    null,
-                    null
-            );
-        }
-
-        return new Result.Success<>(
-                mapper.toGameStatus(gameEntityOpt.get())
-        );
-    }
-
-    @Override
-    public Result<Game> addStatusList(Long gameId, List<GameStatus> gameStatuses) {
-        var gameEntityOpt = gameRepository.findById(gameId);
-
-        if (gameEntityOpt.isEmpty()) {
-            return new Result.Failure<>(
-                    404,
-                    "Game not found",
-                    null,
-                    null
-            );
-        }
-        var gameEntity = gameEntityOpt.get();
-
-        var addedAll = gameEntity.getGameStatuses().addAll(gameStatuses.stream()
-                .map(mapper::toGameStatusEntity)
-                .toList());
-
-        if (!addedAll) {
-            return new Result.Failure<>(
-                    500,
-                    "Error adding game statuses",
-                    null,
-                    null
-            );
-        }
-
-        return new Result.Success<>(mapper.toGame(gameRepository.save(gameEntity)));
-    }
-
-    @Override
-    public Result<Game> addTagList(Long gameId, List<GameTag> gameTags) {
-        return null;
     }
 
     @Override
@@ -131,18 +66,23 @@ public class GameRepoAdapter implements GameRepoPort {
     }
 
     @Override
-    public Result<Developer> saveDeveloper(Developer developer) {
-        if (developerRepository.existsById(developer.id())){
-            return new Result.Failure<>(
-                    409,
-                    "Developer already exists",
-                    null,
-                    null
-            );
+    public Developer saveDeveloper(Developer developer) throws DeveloperAlreadyExistsException {
+        try{
+            return mapper.toDeveloper(developerRepository.save(mapper.toDeveloperEntity(developer)));
+        } catch (DataIntegrityViolationException e) {
+            throw new DeveloperAlreadyExistsException(developer.name());
         }
+    }
 
-        return new Result.Success<>(
-                mapper.toDeveloper(developerRepository.save(mapper.toDeveloperEntity(developer)))
-        );
+    @Override
+    public void updateImageUrl(Long gameId, String imageUrl) throws GameUpdateException, GameNotFoundException {
+        if (!gameRepository.existsById(gameId)) {
+            throw new GameNotFoundException(gameId);
+        }
+        try {
+            gameRepository.updateImageUrl(gameId, imageUrl);
+        } catch (DataIntegrityViolationException e) {
+            throw new GameUpdateException(gameId, "imageUrl");
+        }
     }
 }

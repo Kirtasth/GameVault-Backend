@@ -3,7 +3,6 @@ package com.kirtasth.gamevault.users.application.services;
 import com.kirtasth.gamevault.common.models.enums.RoleEnum;
 import com.kirtasth.gamevault.common.models.page.Page;
 import com.kirtasth.gamevault.common.models.page.PageRequest;
-import com.kirtasth.gamevault.common.models.util.Result;
 import com.kirtasth.gamevault.users.domain.models.NewUser;
 import com.kirtasth.gamevault.users.domain.models.Role;
 import com.kirtasth.gamevault.users.domain.models.User;
@@ -14,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -23,23 +21,22 @@ public class UserServiceAdapter implements UserServicePort {
     private final UserRepoPort userRepo;
 
     @Override
-    public Result<User> getUserById(Long id) {
+    public User getUserById(Long id) {
         return userRepo.findUserById(id);
     }
 
     @Override
-    public Result<User> getUserByEmail(String email) {
+    public User getUserByEmail(String email) {
         return this.userRepo.findUserByEmail(email);
     }
 
     @Override
     public Page<User> listUsersWithCriteria(UserCriteria criteria, PageRequest pageRequest) {
-
         return this.userRepo.findAllUsersWithCriteria(criteria, pageRequest);
     }
 
     @Override
-    public Result<User> saveUser(NewUser newUser) {
+    public User saveUser(NewUser newUser) {
 
         var user = new User();
         user.setUsername(newUser.getUsername());
@@ -52,32 +49,16 @@ public class UserServiceAdapter implements UserServicePort {
         user.setAccountLocked(false);
         user.setCredentialsExpired(false);
 
+        var userRole = this.userRepo.findRole(RoleEnum.USER);
+        user.setRoles(List.of(userRole));
+
+
         return userRepo.saveUser(user);
     }
 
     @Override
-    public Result<Boolean> lockUserById(Long id, String reason) {
-        return null;
-    }
-
-    @Override
-    public Result<Boolean> unlockUserById(Long id) {
-        return null;
-    }
-
-    @Override
-    public Result<Boolean> deleteUserById(Long id) {
-        return null;
-    }
-
-    @Override
-    public Result<Void> addRolesToUser(Long id, List<RoleEnum> roleEnums) {
+    public User addRolesToUser(Long id, List<RoleEnum> roleEnums) {
         return this.userRepo.addRolesToUser(id, roleEnums);
-    }
-
-    @Override
-    public Result<Boolean> removeRolesFromUser(Long id, List<RoleEnum> roleEnums) {
-        return null;
     }
 
     @Override
@@ -86,29 +67,18 @@ public class UserServiceAdapter implements UserServicePort {
     }
 
     @Override
-    public Result<Boolean> canCreateGames(Long userId) {
+    public boolean canCreateGames(Long userId) {
         var roles = this.getRolesByUserId(userId);
 
-        return new Result.Success<>(roles.stream()
+        return roles.stream()
                 .map(Role::getRole)
                 .anyMatch(
-                        role -> role == RoleEnum.ADMIN || role == RoleEnum.DEVELOPER
-                ));
+                        role -> role == RoleEnum.ADMIN || role == RoleEnum.DEVELOPER);
     }
 
     @Override
-    public Result<Long> getUserId(String email) {
-        var userRes = this.userRepo.findUserByEmail(email);
-
-        if (userRes instanceof Result.Failure<User>(
-                int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
-        )) {
-            return new Result.Failure<>(errorCode, errorMsg, errorDetails, exception);
-        }
-
-        var user = ((Result.Success<User>) userRes).data();
-
-        return new Result.Success<>(user.getId());
+    public Long getUserId(String email) {
+        return this.userRepo.findUserByEmail(email).getId();
     }
 
 }

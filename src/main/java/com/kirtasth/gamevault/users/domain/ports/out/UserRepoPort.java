@@ -3,7 +3,9 @@ package com.kirtasth.gamevault.users.domain.ports.out;
 import com.kirtasth.gamevault.common.models.enums.RoleEnum;
 import com.kirtasth.gamevault.common.models.page.Page;
 import com.kirtasth.gamevault.common.models.page.PageRequest;
-import com.kirtasth.gamevault.common.models.util.Result;
+import com.kirtasth.gamevault.users.application.exception.RoleNotFoundException;
+import com.kirtasth.gamevault.users.application.exception.UserAlreadyRegisteredException;
+import com.kirtasth.gamevault.users.application.exception.UserNotFoundException;
 import com.kirtasth.gamevault.users.domain.models.Role;
 import com.kirtasth.gamevault.users.domain.models.User;
 import com.kirtasth.gamevault.users.domain.models.UserCriteria;
@@ -12,15 +14,17 @@ import java.util.List;
 
 public interface UserRepoPort {
 
-    Result<User> findUserById(Long id);
-    Result<User> findUserByEmail(String email);
+    User findUserById(Long id) throws UserNotFoundException;
+
+    User findUserByEmail(String email) throws UserNotFoundException;
+
     Page<User> findAllUsersWithCriteria(UserCriteria criteria, PageRequest pageRequest);
-    Result<User> saveUser(User user);
-    Result<Boolean> lockUserById(Long id, String reason);
-    Result<Boolean> unlockUserById(Long id);
-    Result<Boolean> deleteUserById(Long id);
-    Result<Void> addRolesToUser(Long id, List<RoleEnum> roleEnums);
-    Result<Boolean> removeRolesFromUser(Long id, List<RoleEnum> roleEnums);
+
+    Role findRole(RoleEnum role) throws RoleNotFoundException;
+
+    User saveUser(User user) throws UserAlreadyRegisteredException;
+
+    User addRolesToUser(Long id, List<RoleEnum> roleEnums) throws RoleNotFoundException;
+
     List<Role> findRolesByUserId(Long userId);
-    User getReference(Long id);
 }

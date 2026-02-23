@@ -1,11 +1,10 @@
 package com.kirtasth.gamevault.catalog.domain.ports.out;
 
-import com.kirtasth.gamevault.common.models.util.Result;
+import com.kirtasth.gamevault.catalog.application.exception.CloudinaryImageUploadException;
 
 public interface ImageStoragePort {
-    Result<String> upload(byte[] image, String name);
 
-    Result<String> uploadAvatar(byte[] image, String name, Long userId);
+    String uploadAvatar(byte[] image, String name, Long userId) throws CloudinaryImageUploadException;
 
-    Result<String> uploadGameMainImage(byte[] image, String name, Long gameId);
+    String uploadGameMainImage(byte[] image, Long gameId) throws CloudinaryImageUploadException;
 }

@@ -1,22 +1,22 @@
 package com.kirtasth.gamevault.catalog.domain.ports.out;
 
+import com.kirtasth.gamevault.catalog.application.exception.DeveloperAlreadyExistsException;
+import com.kirtasth.gamevault.catalog.application.exception.GameAlreadyExistsException;
+import com.kirtasth.gamevault.catalog.application.exception.GameNotFoundException;
+import com.kirtasth.gamevault.catalog.application.exception.GameUpdateException;
 import com.kirtasth.gamevault.catalog.domain.models.*;
-import com.kirtasth.gamevault.common.models.enums.GameStatusEnum;
 import com.kirtasth.gamevault.common.models.page.Page;
 import com.kirtasth.gamevault.common.models.page.PageRequest;
-import com.kirtasth.gamevault.common.models.util.Result;
-
-import java.util.List;
 
 public interface GameRepoPort {
 
-    Result<Game> save(Game game);
-    Result<GameStatus> saveStatus(GameStatus gameStatus);
-    Result<Game> findById(Long id);
-    Result<GameStatus> findByStatusEnum(GameStatusEnum status);
-    Result<Game> addStatusList(Long gameId, List<GameStatus> gameStatuses);
-    Result<Game> addTagList(Long gameId, List<GameTag> gameTags);
+    Game save(Game game) throws GameAlreadyExistsException;
+
+    Game findById(Long id) throws GameNotFoundException;
+
     Page<Game> findAll(PageRequest pageRequest, GameCriteria gameCriteria);
 
-    Result<Developer> saveDeveloper(Developer developer);
+    Developer saveDeveloper(Developer developer) throws DeveloperAlreadyExistsException;
+
+    void updateImageUrl(Long gameId, String imageUrl) throws GameUpdateException, GameNotFoundException;
 }
