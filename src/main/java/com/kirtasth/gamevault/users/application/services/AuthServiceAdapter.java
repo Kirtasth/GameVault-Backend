@@ -33,7 +33,21 @@ public class AuthServiceAdapter implements AuthServicePort {
 
 
     @Override
-    public Result<AccessJwt> login(Credentials credentials) {
+    public User updateUser(Long id, UpdatedUser updatedUser, MultipartFile avatarImage) {
+
+        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
+            updatedUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+        }
+
+        var avatarUrl = userImageService.uploadAvatar(id, avatarImage);
+
+        updatedUser.setAvatarUrl(avatarUrl);
+
+        return this.userService.updateUser(id, updatedUser);
+    }
+
+    @Override
+    public AccessJwt login(Credentials credentials) {
         var email = credentials.getEmail();
         var password = credentials.getPassword();
 

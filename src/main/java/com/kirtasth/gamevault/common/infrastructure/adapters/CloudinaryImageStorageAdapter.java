@@ -1,9 +1,9 @@
-package com.kirtasth.gamevault.catalog.infrastructure.adapters;
+package com.kirtasth.gamevault.common.infrastructure.adapters;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.kirtasth.gamevault.catalog.application.exception.CloudinaryImageUploadException;
-import com.kirtasth.gamevault.catalog.domain.ports.out.ImageStoragePort;
+import com.kirtasth.gamevault.common.infrastructure.exception.CloudinaryImageUploadException;
+import com.kirtasth.gamevault.common.domain.ports.out.ImageStoragePort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,15 +16,14 @@ public class CloudinaryImageStorageAdapter implements ImageStoragePort {
     private final Cloudinary cloudinary;
 
     @Override
-    public String uploadAvatar(byte[] image, String name, Long userId) throws CloudinaryImageUploadException {
+    public String uploadAvatar(byte[] image, Long userId) {
         try {
             var options = ObjectUtils.asMap(
                     "folder", "gamevault/users/" + userId,
                     "public_id", "avatar",
                     "overwrite", true,
                     "context", "user_id=" + userId,
-                    "tags", "user_avatar",
-                    "upload_preset", "avatar_preset"
+                    "tags", "user_avatar"
             );
 
             var uploadResult = cloudinary.uploader().upload(image, options);
@@ -35,7 +34,7 @@ public class CloudinaryImageStorageAdapter implements ImageStoragePort {
     }
 
     @Override
-    public String uploadGameMainImage(byte[] image, Long gameId) throws CloudinaryImageUploadException {
+    public String uploadGameMainImage(byte[] image, Long gameId) {
         try {
             var options = ObjectUtils.asMap(
                     "folder", "gamevault/games/" + gameId,

@@ -5,6 +5,7 @@ import com.kirtasth.gamevault.common.models.page.Page;
 import com.kirtasth.gamevault.common.models.page.PageRequest;
 import com.kirtasth.gamevault.users.domain.models.NewUser;
 import com.kirtasth.gamevault.users.domain.models.Role;
+import com.kirtasth.gamevault.users.domain.models.UpdatedUser;
 import com.kirtasth.gamevault.users.domain.models.User;
 import com.kirtasth.gamevault.users.domain.models.UserCriteria;
 
@@ -19,6 +20,8 @@ public interface UserServicePort {
     Page<User> listUsersWithCriteria(UserCriteria criteria, PageRequest pageRequest);
 
     User saveUser(NewUser newUser);
+
+    User updateUser(Long id, UpdatedUser updatedUser);
 
     User addRolesToUser(Long id, List<RoleEnum> roleEnums);
 

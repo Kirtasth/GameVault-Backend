@@ -5,6 +5,7 @@ import com.kirtasth.gamevault.common.models.page.Page;
 import com.kirtasth.gamevault.common.models.page.PageRequest;
 import com.kirtasth.gamevault.users.domain.models.NewUser;
 import com.kirtasth.gamevault.users.domain.models.Role;
+import com.kirtasth.gamevault.users.domain.models.UpdatedUser;
 import com.kirtasth.gamevault.users.domain.models.User;
 import com.kirtasth.gamevault.users.domain.models.UserCriteria;
 import com.kirtasth.gamevault.users.domain.ports.in.UserServicePort;
@@ -54,6 +55,29 @@ public class UserServiceAdapter implements UserServicePort {
 
 
         return userRepo.saveUser(user);
+    }
+
+    @Override
+    public User updateUser(Long id, UpdatedUser updatedUser) {
+        var user = this.userRepo.findUserById(id);
+
+        if (updatedUser.getUsername() != null) {
+            user.setUsername(updatedUser.getUsername());
+        }
+        if (updatedUser.getEmail() != null) {
+            user.setEmail(updatedUser.getEmail());
+        }
+        if (updatedUser.getPassword() != null) {
+            user.setPassword(updatedUser.getPassword());
+        }
+        if (updatedUser.getAvatarUrl() != null) {
+            user.setAvatarUrl(updatedUser.getAvatarUrl());
+        }
+        if (updatedUser.getBio() != null) {
+            user.setBio(updatedUser.getBio());
+        }
+
+        return this.userRepo.saveUser(user);
     }
 
     @Override
