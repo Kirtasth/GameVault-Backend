@@ -3,7 +3,7 @@ package com.kirtasth.gamevault.catalog.application;
 import com.kirtasth.gamevault.catalog.domain.models.*;
 import com.kirtasth.gamevault.catalog.domain.ports.in.GameServicePort;
 import com.kirtasth.gamevault.catalog.domain.ports.out.GameRepoPort;
-import com.kirtasth.gamevault.catalog.domain.ports.out.ImageStoragePort;
+import com.kirtasth.gamevault.common.domain.ports.out.ImageStoragePort;
 import com.kirtasth.gamevault.catalog.domain.ports.out.UserValidationPort;
 import com.kirtasth.gamevault.common.models.enums.RoleEnum;
 import com.kirtasth.gamevault.common.models.page.Page;
@@ -66,5 +66,10 @@ public class GameServiceAdapter implements GameServicePort {
                 .games(List.of())
                 .build();
         return gameRepo.saveDeveloper(developer);
+    }
+
+    @Override
+    public Page<Game> listDevGames(Long developerId, PageRequest pageRequest, GameCriteria gameCriteria) {
+        return gameRepo.findAllByDevId(developerId, pageRequest, gameCriteria);
     }
 }

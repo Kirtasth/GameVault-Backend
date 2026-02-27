@@ -13,4 +13,6 @@ public interface GameServicePort {
     Page<Game> listAll(PageRequest pageRequest, GameCriteria gameCriteria);
 
     Developer registerDeveloper(NewDeveloper newDeveloper);
+
+    Page<Game> listDevGames(Long developerId, PageRequest pageRequest, GameCriteria gameCriteria);
 }

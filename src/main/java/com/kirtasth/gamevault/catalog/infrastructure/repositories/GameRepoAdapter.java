@@ -85,4 +85,25 @@ public class GameRepoAdapter implements GameRepoPort {
             throw new GameUpdateException(gameId, "imageUrl");
         }
     }
+
+    @Override
+    public Page<Game> findAllByDevId(Long developerId, PageRequest pageRequest, GameCriteria gameCriteria) {
+        var devName = this.developerRepository.findById(developerId).orElseThrow(
+                () -> new DeveloperNotFoundException(developerId)).getName();
+
+        var pageable = this.pageMapper.toSpring(pageRequest);
+
+        Specification<GameEntity> spec = Specification.allOf(
+                this.gameEntitySpecification.containsTitle(gameCriteria.title()),
+                this.gameEntitySpecification.containsDeveloper(devName),
+                this.gameEntitySpecification.priceGreaterOrEqual(gameCriteria.minPrice()),
+                this.gameEntitySpecification.priceLessOrEqual(gameCriteria.maxPrice()),
+                this.gameEntitySpecification.releasedAfter(gameCriteria.fromReleaseTime()),
+                this.gameEntitySpecification.releasedBefore(gameCriteria.toReleaseTime()),
+                this.gameEntitySpecification.containsAllGameTags(gameCriteria.gameTags())
+        );
+
+        var page = this.gameRepository.findAll(spec, pageable).map(mapper::toGame);
+        return this.pageMapper.toDomain(page);
+    }
 }

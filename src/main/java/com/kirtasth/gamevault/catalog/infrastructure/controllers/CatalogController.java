@@ -1,7 +1,5 @@
 package com.kirtasth.gamevault.catalog.infrastructure.controllers;
 
-import com.kirtasth.gamevault.catalog.domain.models.Developer;
-import com.kirtasth.gamevault.catalog.domain.models.Game;
 import com.kirtasth.gamevault.catalog.domain.ports.in.GameServicePort;
 import com.kirtasth.gamevault.catalog.domain.ports.out.UserValidationPort;
 import com.kirtasth.gamevault.catalog.infrastructure.dtos.requests.GameCriteriaRequest;
@@ -9,10 +7,10 @@ import com.kirtasth.gamevault.catalog.infrastructure.dtos.requests.NewDeveloperR
 import com.kirtasth.gamevault.catalog.infrastructure.dtos.requests.NewGameRequest;
 import com.kirtasth.gamevault.catalog.infrastructure.mappers.CatalogMapper;
 import com.kirtasth.gamevault.common.infrastructure.PageMapper;
-import com.kirtasth.gamevault.common.infrastructure.responses.ErrorResponse;
-import com.kirtasth.gamevault.common.models.util.Result;
 import com.kirtasth.gamevault.users.domain.models.AuthUser;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -44,21 +42,11 @@ public class CatalogController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        var authUser = (AuthUser)authentication.getPrincipal();
+        var authUser = (AuthUser) authentication.getPrincipal();
 
-        var userIdRes = this.userValidation.getUserId(authUser.getEmail());
+        var userId = this.userValidation.getUserId(authUser.getEmail());
 
-        if (userIdRes instanceof Result.Failure<Long> failure) {
-            return handleFailure(failure);
-        }
-
-        var userId = ((Result.Success<Long>) userIdRes).data();
-
-        var result = this.gameService.create(this.mapper.toNewGame(newGameRequest, userId));
-
-        if (result instanceof Result.Failure<Game> failure) {
-            return handleFailure(failure);
-        }
+        this.gameService.create(this.mapper.toNewGame(newGameRequest, userId));
 
         return ResponseEntity.status(HttpStatus.CREATED).contentLength(0).build();
     }
@@ -66,56 +54,45 @@ public class CatalogController {
     @GetMapping
     public ResponseEntity<?> listAllWithSpecificationAndPageable(
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.ASC) Pageable pageable,
-            @ModelAttribute GameCriteriaRequest gameCriteriaRequest,
-            Authentication authentication
+            @ModelAttribute GameCriteriaRequest gameCriteriaRequest
     ) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        var authUser = (AuthUser)authentication.getPrincipal();
-
-        var userIdRes = this.userValidation.getUserId(authUser.getEmail());
-
-        if (userIdRes instanceof Result.Failure<Long> failure) {
-            return handleFailure(failure);
-        }
-
         var domainPageable = this.pageMapper.toDomain(pageable);
         var gameCriteria = this.mapper.toGameCriteria(gameCriteriaRequest);
 
         var result = this.gameService.listAll(domainPageable, gameCriteria);
 
-        var response = this.pageMapper.toSpring(result, pageable).map(this.mapper::toGameResponse);
+        var response = this.pageMapper.toSpring(result, pageable)
+                .map(this.mapper::toGameResponse);
 
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/developer")
     public ResponseEntity<?> registerDeveloper(
-            @RequestBody @Valid NewDeveloperRequest newDeveloperRequest
+            @RequestBody @Valid NewDeveloperRequest newDeveloperRequest,
+            Authentication authentication
     ) {
+        var userId = ((AuthUser)authentication.getPrincipal()).getId();
         log.info("Registering new developer with data: {}.", newDeveloperRequest);
-        var result = this.gameService.registerDeveloper(this.mapper.toNewDeveloper(newDeveloperRequest));
-
-        if (result instanceof Result.Failure<Developer> failure) {
-            return handleFailure(failure);
-        }
+        this.gameService.registerDeveloper(this.mapper.toNewDeveloper(userId, newDeveloperRequest));
 
         return ResponseEntity.status(HttpStatus.CREATED).contentLength(0).build();
     }
 
-    private ResponseEntity<ErrorResponse> handleFailure(Result.Failure<?> failure) {
-        return new ResponseEntity<>(
-                new ErrorResponse(
-                        failure.errorCode(),
-                        failure.exception() == null
-                                ? "UNKNOWN_EXCEPTION"
-                                : failure.exception().getClass().getSimpleName(),
-                        failure.errorMsg(),
-                        failure.errorDetails()
-                ),
-                HttpStatus.valueOf(failure.errorCode())
-        );
+    @GetMapping("/my-games/{developerId}")
+    public ResponseEntity<?> listMyGames(
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            @ModelAttribute GameCriteriaRequest gameCriteriaRequest,
+            @PathVariable @NonNull @Min(1) Long developerId
+    ) {
+        var pageRequest = this.pageMapper.toDomain(pageable);
+
+        var gameCriteria = this.mapper.toGameCriteria(gameCriteriaRequest);
+
+        var result = this.gameService.listDevGames(developerId, pageRequest, gameCriteria);
+
+        var response = this.pageMapper.toSpring(result, pageable)
+                .map(this.mapper::toGameResponse);
+        return ResponseEntity.ok(response);
     }
 }
