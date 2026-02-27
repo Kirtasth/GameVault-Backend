@@ -33,7 +33,7 @@ public class PermissionChecker {
             var authentication = auth.get();
 
             if (authentication == null || !authentication.isAuthenticated()
-                    || !(authentication.getPrincipal() instanceof AuthUser authUser)) {
+                    || !(authentication.getPrincipal() instanceof AuthUser)) {
                 return new AuthorizationDecision(false);
             }
 

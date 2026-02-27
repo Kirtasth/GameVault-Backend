@@ -1,6 +1,5 @@
 package com.kirtasth.gamevault.users.infrastructure.security;
 
-import com.kirtasth.gamevault.common.models.util.Result;
 import com.kirtasth.gamevault.users.domain.models.AuthUser;
 import com.kirtasth.gamevault.users.domain.ports.in.JwtServicePort;
 import jakarta.servlet.FilterChain;
@@ -42,26 +41,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         jwt = authHeader.substring(7);
 
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            var validationResult = this.jwtService.isTokenValid(jwt);
+            if (this.jwtService.isTokenValid(jwt)) {
+                var userEmail = this.jwtService.extractEmail(jwt);
+                var authUser = (AuthUser) userDetailsService.loadUserByUsername(userEmail);
+                var authToken = new UsernamePasswordAuthenticationToken(
+                        authUser,
+                        null,
+                        authUser.getAuthorities()
+                );
 
-            if (validationResult instanceof Result.Success) {
-                var userEmailRes = this.jwtService.extractEmail(jwt);
-
-                if (userEmailRes instanceof Result.Success<String>) {
-                    var userEmail = ((Result.Success<String>) userEmailRes).data();
-                    var authUser = (AuthUser) userDetailsService.loadUserByUsername(userEmail);
-
-                    var authToken = new UsernamePasswordAuthenticationToken(
-                            authUser,
-                            null,
-                            authUser.getAuthorities()
-                    );
-
-                    authToken.setDetails(
-                            new WebAuthenticationDetails(request)
-                    );
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
+                authToken.setDetails(
+                        new WebAuthenticationDetails(request)
+                );
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
 
