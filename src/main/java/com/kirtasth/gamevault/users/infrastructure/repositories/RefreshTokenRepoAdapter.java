@@ -1,15 +1,15 @@
 package com.kirtasth.gamevault.users.infrastructure.repositories;
 
-import com.kirtasth.gamevault.common.models.util.Result;
+import com.kirtasth.gamevault.users.application.exception.TokenInvalidException;
 import com.kirtasth.gamevault.users.domain.models.RefreshToken;
 import com.kirtasth.gamevault.users.domain.ports.out.RefreshTokenRepoPort;
 import com.kirtasth.gamevault.users.infrastructure.mappers.AuthMapper;
 import com.kirtasth.gamevault.users.infrastructure.repositories.jpa.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
-import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
@@ -19,60 +19,35 @@ public class RefreshTokenRepoAdapter implements RefreshTokenRepoPort {
     private final AuthMapper authMapper;
 
     @Override
-    public Result<RefreshToken> findByToken(String token) {
+    public RefreshToken findByToken(String token) throws TokenInvalidException {
         var refreshToken = this.refreshTokenRepository.findByToken(token);
         if (refreshToken.isEmpty()) {
-            return new Result.Failure<>(
-                    404,
-                    "Refresh token not found",
-                    Map.of("details", "Refresh token not found, try to login first and then refresh token"),
-                    null
-            );
+            throw new TokenInvalidException("Token not found in the database");
         }
 
-        return new Result.Success<>(this.authMapper.toRefreshToken(refreshToken.get()));
+        return this.authMapper.toRefreshToken(refreshToken.get());
     }
 
     @Override
-    public Result<RefreshToken> save(RefreshToken refreshToken) {
-        var savedRefreshToken = this.refreshTokenRepository.save(this.authMapper.toRefreshTokenEntity(refreshToken));
-
-        return new Result.Success<>(this.authMapper.toRefreshToken(savedRefreshToken));
+    public void revokeAllByUserId(Long userId) throws TokenInvalidException {
+        try {
+            this.refreshTokenRepository.findAllByUserIdAndRevokedAtIsNull(userId).forEach(
+                    refreshTokenEntity -> {
+                        refreshTokenEntity.setRevokedAt(Instant.now());
+                        this.refreshTokenRepository.save(refreshTokenEntity);
+                    }
+            );
+        } catch (DataIntegrityViolationException e) {
+            throw new TokenInvalidException("Unable to revoke tokens for user with id: " + userId + ".");
+        }
     }
 
     @Override
-    public Result<Void> revoke(String token) {
-        var refreshToken = this.refreshTokenRepository.findByToken(token);
-
-        if (refreshToken.isEmpty()) {
-            return new Result.Failure<>(
-                    400,
-                    "Could not revoke token",
-                    Map.of("details", "Token not found"),
-                    null
-            );
+    public void save(RefreshToken refreshToken) throws TokenInvalidException {
+        try {
+            this.refreshTokenRepository.save(this.authMapper.toRefreshTokenEntity(refreshToken));
+        } catch (DataIntegrityViolationException e) {
+            throw new TokenInvalidException("Unable to save token for user with id: " + refreshToken.getUserId() + ".");
         }
-        refreshToken.get().setRevokedAt(Instant.now());
-        this.refreshTokenRepository.save(refreshToken.get());
-
-        return new Result.Success<>(null);
-    }
-
-    @Override
-    public Result<Void> revokeByUserId(Long userId) {
-        var refreshToken = this.refreshTokenRepository.findFirstByUserIdOrderByCreatedAtDesc(userId);
-        if (refreshToken.isEmpty()) {
-            return new Result.Failure<>(
-                    404,
-                    "Could not revoke token",
-                    Map.of("details", "Token not found"),
-                    null
-            );
-        }
-
-        refreshToken.get().setRevokedAt(Instant.now());
-        this.refreshTokenRepository.save(refreshToken.get());
-
-        return new Result.Success<>(null);
     }
 }

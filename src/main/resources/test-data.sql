@@ -42,17 +42,17 @@ VALUES (1, 'Action'),
 
 -- Insert Games
 -- Note: 'dev_studio' (id: 2) is the developer
-INSERT INTO "catalog"."games" ("id", "developer_id", "title", "description", "price", "release_data", "status",
-                               "created_at")
-VALUES (1, 2, 'Neon Cyber-Slayer', 'A fast-paced cyberpunk slasher with neon aesthetics.', 19.99, '2023-11-15',
-        'APPROVED', NOW()),
-       (2, 2, 'Medieval Tycoon', 'Build your own castle and manage the economy.', 29.99, '2024-01-10', 'APPROVED',
-        NOW()),
-       (3, 2, 'Glitchy Alpha', 'An early access build of our next big hit.', 0.00, '2025-01-01', 'PENDING_APPROVAL',
-        NOW());
+INSERT INTO "catalog"."games" ("id", "developer_id", "title", "description", "price", "release_date",
+                               "created_at", "updated_at", "deleted_at")
+VALUES (1, 2, 'Neon Cyber-Slayer', 'A fast-paced cyberpunk slasher with neon aesthetics.', 19.99, NULL,
+        NOW(), NOW(), NULL),
+       (2, 2, 'Medieval Tycoon', 'Build your own castle and manage the economy.', 29.99, NULL,
+        NOW(), NOW(), NULL),
+       (3, 2, 'Glitchy Alpha', 'An early access build of our next big hit.', 0.00, NULL,
+        NOW(), NOW(), NULL);
 
 -- Link Games to Tags
-INSERT INTO "catalog"."game_game_tags" ("game_id", "tag_id")
+INSERT INTO "catalog"."game_tags_assignments" ("game_id", "tag_id")
 VALUES (1, 1),
        (1, 3), -- Neon Cyber-Slayer is Action, Indie
        (2, 4),

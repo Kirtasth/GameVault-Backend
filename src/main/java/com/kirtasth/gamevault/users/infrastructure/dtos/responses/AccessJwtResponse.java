@@ -11,6 +11,7 @@ import lombok.ToString;
 @AllArgsConstructor
 public class AccessJwtResponse {
 
+    private Long userId;
     private String accessToken;
     private String refreshToken;
     private String tokenType;
