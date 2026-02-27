@@ -1,5 +1,6 @@
 package com.kirtasth.gamevault.users.application.jwt;
 
+import com.kirtasth.gamevault.users.application.exception.TokenInvalidException;
 import com.kirtasth.gamevault.users.domain.ports.in.KeyGeneratorPort;
 import com.kirtasth.gamevault.users.domain.ports.out.FileSystemPort;
 import lombok.RequiredArgsConstructor;
@@ -68,7 +69,7 @@ public class JwtKeyGenerator implements KeyGeneratorPort {
                 return keyPair;
 
             } catch (NoSuchAlgorithmException | InvalidKeySpecException | IOException e) {
-                throw new RuntimeException(e);
+                throw new TokenInvalidException("Could not load token keys");
             }
         }
 
@@ -94,7 +95,7 @@ public class JwtKeyGenerator implements KeyGeneratorPort {
             }
 
         } catch (NoSuchAlgorithmException | IOException e) {
-            throw new RuntimeException(e);
+            throw new TokenInvalidException("Could not generate token keys");
         }
 
         return keyPair;

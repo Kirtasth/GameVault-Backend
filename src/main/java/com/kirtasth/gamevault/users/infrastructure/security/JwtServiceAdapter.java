@@ -1,6 +1,6 @@
 package com.kirtasth.gamevault.users.infrastructure.security;
 
-import com.kirtasth.gamevault.common.models.util.Result;
+import com.kirtasth.gamevault.users.application.exception.TokenInvalidException;
 import com.kirtasth.gamevault.users.application.jwt.JwtKeyGenerator;
 import com.kirtasth.gamevault.users.domain.models.AccessJwt;
 import com.kirtasth.gamevault.users.domain.models.RefreshToken;
@@ -35,7 +35,7 @@ public class JwtServiceAdapter implements JwtServicePort {
     private final RefreshTokenRepoPort refreshTokenRepository;
 
     @Override
-    public Result<AccessJwt> getAccessJwt(Long userId, String email, List<Role> roles) {
+    public AccessJwt getAccessJwt(Long userId, String email, List<Role> roles) {
         try {
             var accessToken = generateAccessToken(email, roles);
             var refreshTokenStr = generateRefreshToken(email, roles);
@@ -46,7 +46,7 @@ public class JwtServiceAdapter implements JwtServicePort {
 
             this.refreshTokenRepository.save(refreshToken);
 
-            var accessJwt = new AccessJwt(
+            return new AccessJwt(
                     userId,
                     accessToken,
                     refreshTokenStr,
@@ -54,40 +54,28 @@ public class JwtServiceAdapter implements JwtServicePort {
                     jwtExpiration,
                     jwtRefreshExpiration
             );
-
-            return new Result.Success<>(accessJwt);
         } catch (JwtException e) {
-            return new Result.Failure<>(
-                    401,
-                    e.getMessage(),
-                    null,
-                    e
-            );
+            throw new TokenInvalidException("Unable to generate tokens for user with id: " + userId + ".");
         }
     }
 
     @Override
-    public Result<RefreshToken> isNotExpiredAndNotRevoked(String refreshToken) {
+    public RefreshToken isNotExpiredAndNotRevoked(String refreshToken) {
         try {
             var claims = getTokenClaims(refreshToken);
             var isExpired = isTokenExpired(claims);
 
             if (isExpired) {
-                return new Result.Failure<>(401, "Token expired", null, null);
+                throw new TokenInvalidException("Token expired");
             }
-            var storedTokenResult = this.refreshTokenRepository.findByToken(refreshToken);
-            if (storedTokenResult instanceof Result.Failure<RefreshToken>(
-                    int errorCode, String errorMsg, Map<String, String> errorDetails, Exception exception
-            )) {
-                return new Result.Failure<>(errorCode, errorMsg, errorDetails, exception);
-            }
-            var storedToken = ((Result.Success<RefreshToken>) storedTokenResult).data();
+            var storedToken = this.refreshTokenRepository.findByToken(refreshToken);
+
             if (storedToken.getRevokedAt() != null) {
-                return new Result.Failure<>(401, "Token revoked", null, null);
+                throw new TokenInvalidException("Token revoked");
             }
-            return new Result.Success<>(storedToken);
+            return storedToken;
         } catch (JwtException e) {
-            return new Result.Failure<>(401, "Invalid token", Map.of("details", e.getMessage()), e);
+            throw new TokenInvalidException("Unable to extract token claims.");
         }
     }
 
@@ -97,34 +85,28 @@ public class JwtServiceAdapter implements JwtServicePort {
     }
 
     @Override
-    public Result<String> extractEmail(String token) {
+    public String extractEmail(String token) throws TokenInvalidException {
         try {
             var claims = getTokenClaims(token);
-            return new Result.Success<>(claims.getSubject());
+            return claims.getSubject();
         } catch (JwtException e) {
-            return new Result.Failure<>(401, "Invalid token", Map.of("details", e.getMessage()), e);
+            throw new TokenInvalidException("Unable to extract token claims.");
         }
     }
 
     @Override
-    public Result<Void> isTokenValid(String token) {
+    public boolean isTokenValid(String token) {
         try {
             var claims = getTokenClaims(token);
             var isExpired = isTokenExpired(claims);
 
             if (isExpired) {
-                return new Result.Failure<>(401, "Token expired", null, null);
+                return false;
             }
 
-            var email = claims.getSubject();
-
-            if (email == null) {
-                return new Result.Failure<>(401, "Invalid token", null, null);
-            }
-
-            return new Result.Success<>(null);
+            return claims.getSubject() != null;
         } catch (JwtException e) {
-            return new Result.Failure<>(401, "Invalid token", Map.of("details", e.getMessage()), e);
+            return false;
         }
     }
 
@@ -141,23 +123,13 @@ public class JwtServiceAdapter implements JwtServicePort {
     }
 
     private String generateAccessToken(String email, List<Role> userRoles) throws JwtException {
-        Map<String, Object> claims = new HashMap<>();
-
-        String roles = userRoles.stream()
-                .map(role -> role.getRole().name())
-                .collect(Collectors.joining(" "));
-        claims.put("roles", roles);
+        var claims = buildClaims(userRoles);
 
         return buildToken(claims, email, jwtExpiration);
     }
 
     private String generateRefreshToken(String email, List<Role> userRoles) throws JwtException {
-        Map<String, Object> claims = new HashMap<>();
-
-        String roles = userRoles.stream()
-                .map(role -> role.getRole().name())
-                .collect(Collectors.joining(" "));
-        claims.put("roles", roles);
+        var claims = buildClaims(userRoles);
 
         return buildToken(claims, email, jwtRefreshExpiration);
     }
@@ -170,5 +142,16 @@ public class JwtServiceAdapter implements JwtServicePort {
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(jwtKeyGenerator.getPrivateKey())
                 .compact();
+    }
+
+    private Map<String, Object> buildClaims(List<Role> userRoles) {
+        Map<String, Object> claims = new HashMap<>();
+
+        String roles = userRoles.stream()
+                .map(role -> role.getRole().name())
+                .collect(Collectors.joining(" "));
+        claims.put("roles", roles);
+
+        return claims;
     }
 }

@@ -1,6 +1,6 @@
 package com.kirtasth.gamevault.users.domain.ports.in;
 
-import com.kirtasth.gamevault.common.models.util.Result;
+import com.kirtasth.gamevault.users.application.exception.TokenInvalidException;
 import com.kirtasth.gamevault.users.domain.models.AccessJwt;
 import com.kirtasth.gamevault.users.domain.models.RefreshToken;
 import com.kirtasth.gamevault.users.domain.models.Role;
@@ -9,13 +9,13 @@ import java.util.List;
 
 public interface JwtServicePort {
 
-    Result<AccessJwt> getAccessJwt(Long userId, String email, List<Role> roles);
+    AccessJwt getAccessJwt(Long userId, String email, List<Role> roles);
 
-    Result<RefreshToken> isNotExpiredAndNotRevoked(String refreshToken);
+    RefreshToken isNotExpiredAndNotRevoked(String refreshToken);
 
     void revokeAll(Long userId);
 
-    Result<String> extractEmail(String token);
+    String extractEmail(String token) throws TokenInvalidException;
 
-    Result<Void> isTokenValid(String token);
+    boolean isTokenValid(String token);
 }

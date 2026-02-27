@@ -1,6 +1,5 @@
 package com.kirtasth.gamevault.users.infrastructure.security;
 
-import com.kirtasth.gamevault.common.models.util.Result;
 import com.kirtasth.gamevault.users.domain.ports.out.AuthProviderPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
