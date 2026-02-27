@@ -1,9 +1,9 @@
 package com.kirtasth.gamevault.catalog.application.exception;
 
-import com.kirtasth.gamevault.common.infrastructure.exception.ApplicationException;
+import com.kirtasth.gamevault.common.infrastructure.exception.ResourceConflictException;
 
-public class DeveloperAlreadyExistsException extends ApplicationException {
+public class DeveloperAlreadyExistsException extends ResourceConflictException {
     public DeveloperAlreadyExistsException(String developerName) {
-        super("Developer with name " + developerName + " already exists");
+        super("Developer with username " + developerName + " already exists");
     }
 }
