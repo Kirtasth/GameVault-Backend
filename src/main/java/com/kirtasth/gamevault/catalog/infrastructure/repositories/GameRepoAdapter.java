@@ -1,16 +1,14 @@
 package com.kirtasth.gamevault.catalog.infrastructure.repositories;
 
-import com.kirtasth.gamevault.catalog.application.exception.DeveloperAlreadyExistsException;
-import com.kirtasth.gamevault.catalog.application.exception.GameAlreadyExistsException;
-import com.kirtasth.gamevault.catalog.application.exception.GameNotFoundException;
-import com.kirtasth.gamevault.catalog.application.exception.GameUpdateException;
-import com.kirtasth.gamevault.catalog.domain.models.*;
+import com.kirtasth.gamevault.catalog.application.exception.*;
+import com.kirtasth.gamevault.catalog.domain.models.Developer;
+import com.kirtasth.gamevault.catalog.domain.models.Game;
+import com.kirtasth.gamevault.catalog.domain.models.GameCriteria;
 import com.kirtasth.gamevault.catalog.domain.ports.out.GameRepoPort;
 import com.kirtasth.gamevault.catalog.infrastructure.dtos.entities.GameEntity;
 import com.kirtasth.gamevault.catalog.infrastructure.mappers.CatalogMapper;
 import com.kirtasth.gamevault.catalog.infrastructure.repositories.jpa.DeveloperRepository;
 import com.kirtasth.gamevault.catalog.infrastructure.repositories.jpa.GameRepository;
-import com.kirtasth.gamevault.catalog.infrastructure.repositories.jpa.GameStatusRepository;
 import com.kirtasth.gamevault.catalog.infrastructure.specifications.GameEntitySpecification;
 import com.kirtasth.gamevault.common.infrastructure.PageMapper;
 import com.kirtasth.gamevault.common.models.page.Page;
@@ -25,14 +23,13 @@ import org.springframework.stereotype.Repository;
 public class GameRepoAdapter implements GameRepoPort {
 
     private final GameRepository gameRepository;
-    private final GameStatusRepository gameStatusRepository;
     private final DeveloperRepository developerRepository;
     private final CatalogMapper mapper;
     private final PageMapper pageMapper;
     private final GameEntitySpecification gameEntitySpecification;
 
     @Override
-    public Game save(Game game) throws GameAlreadyExistsException {
+    public Game save(Game game) {
         try {
             return mapper.toGame(gameRepository.save(mapper.toGameEntity(game)));
         } catch (DataIntegrityViolationException e) {
@@ -66,7 +63,7 @@ public class GameRepoAdapter implements GameRepoPort {
     }
 
     @Override
-    public Developer saveDeveloper(Developer developer) throws DeveloperAlreadyExistsException {
+    public Developer saveDeveloper(Developer developer) {
         try{
             return mapper.toDeveloper(developerRepository.save(mapper.toDeveloperEntity(developer)));
         } catch (DataIntegrityViolationException e) {
@@ -75,7 +72,7 @@ public class GameRepoAdapter implements GameRepoPort {
     }
 
     @Override
-    public void updateImageUrl(Long gameId, String imageUrl) throws GameUpdateException, GameNotFoundException {
+    public void updateImageUrl(Long gameId, String imageUrl) {
         if (!gameRepository.existsById(gameId)) {
             throw new GameNotFoundException(gameId);
         }

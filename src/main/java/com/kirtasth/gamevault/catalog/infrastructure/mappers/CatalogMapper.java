@@ -24,17 +24,13 @@ public interface CatalogMapper {
 
     GameCriteria toGameCriteria(GameCriteriaRequest gameCriteriaRequest);
 
-    NewDeveloper toNewDeveloper(NewDeveloperRequest newDeveloperRequest);
+    NewDeveloper toNewDeveloper(Long userId, NewDeveloperRequest newDeveloperRequest);
 
     @Mapping(target = "developerId", source = "developer.id")
     Game toGame(GameEntity gameEntity);
 
     @Mapping(target = "developer", source = "developerId", qualifiedByName = "developerIdToEntity")
     GameEntity toGameEntity(Game game);
-
-    GameStatus toGameStatus(GameStatusEntity gameStatusEntity);
-
-    GameStatusEntity toGameStatusEntity(GameStatus gameStatus);
 
     Developer toDeveloper(DeveloperEntity developerEntity);
 

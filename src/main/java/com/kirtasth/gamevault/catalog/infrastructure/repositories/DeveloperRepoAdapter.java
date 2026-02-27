@@ -5,6 +5,7 @@ import com.kirtasth.gamevault.catalog.domain.models.Developer;
 import com.kirtasth.gamevault.catalog.domain.models.DeveloperCriteria;
 import com.kirtasth.gamevault.catalog.domain.ports.out.DeveloperRepoPort;
 import com.kirtasth.gamevault.catalog.infrastructure.dtos.entities.DeveloperEntity;
+import com.kirtasth.gamevault.catalog.infrastructure.mappers.CatalogMapper;
 import com.kirtasth.gamevault.catalog.infrastructure.repositories.jpa.DeveloperRepository;
 import com.kirtasth.gamevault.common.infrastructure.PageMapper;
 import com.kirtasth.gamevault.common.models.page.Page;
@@ -20,11 +21,11 @@ import org.springframework.stereotype.Repository;
 public class DeveloperRepoAdapter implements DeveloperRepoPort {
 
     private final DeveloperRepository developerRepository;
-    private final AuthMapper mapper;
+    private final CatalogMapper mapper;
     private final PageMapper pageMapper;
 
     @Override
-    public Developer save(Developer developer) throws DeveloperAlreadyExistsException {
+    public Developer save(Developer developer) {
         try {
             return mapper.toDeveloper(developerRepository.save(mapper.toDeveloperEntity(developer)));
         } catch (DataIntegrityViolationException e) {

@@ -2,7 +2,6 @@ package com.kirtasth.gamevault.catalog.domain.ports.out;
 
 import com.kirtasth.gamevault.catalog.application.exception.GameAlreadyExistsException;
 import com.kirtasth.gamevault.catalog.application.exception.GameNotFoundException;
-import com.kirtasth.gamevault.catalog.application.exception.GameUpdateException;
 import com.kirtasth.gamevault.catalog.domain.models.Developer;
 import com.kirtasth.gamevault.catalog.domain.models.Game;
 import com.kirtasth.gamevault.catalog.domain.models.GameCriteria;
