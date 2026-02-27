@@ -1,5 +1,6 @@
 package com.kirtasth.gamevault.users.infrastructure.config;
 
+import com.kirtasth.gamevault.common.models.enums.RoleEnum;
 import com.kirtasth.gamevault.users.infrastructure.security.JwtAuthenticationFilter;
 import com.kirtasth.gamevault.users.infrastructure.security.PermissionChecker;
 import lombok.RequiredArgsConstructor;
@@ -59,12 +60,25 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
-                        .requestMatchers(HttpMethod.GET , "/api/v1/auth").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/{userId}/logout").access(
-                                permissionChecker.isOwner("userId")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/auth").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").access(
+                                permissionChecker.isAuthenticated()
                         )
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/{userId}").access(
                                 permissionChecker.isOwnerOrAdmin("userId"))
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/users/{userId}").access(
+                                permissionChecker.isOwnerOrAdmin("userId"))
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users").access(
+                                permissionChecker.isAdmin())
+                        .requestMatchers(HttpMethod.POST, "/api/v1/catalog/developer").access(
+                                permissionChecker.isAuthenticated())
+                        .requestMatchers(HttpMethod.POST, "/api/v1/catalog").access(
+                                permissionChecker.hasRole(RoleEnum.DEVELOPER))
+                        .requestMatchers(HttpMethod.GET, "/api/v1/catalog").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/catalog/my-games/{developerId}").access(
+                                permissionChecker.isOwnerOrAdmin("developerId"))
+
+
                         .anyRequest().permitAll())
 
                 .authenticationProvider(authenticationProvider());
