@@ -1,7 +1,7 @@
 package com.kirtasth.gamevault.users.application.exception;
 
-import com.kirtasth.gamevault.common.infrastructure.exception.InternalServerException;
-import com.kirtasth.gamevault.common.models.enums.RoleEnum;
+import com.kirtasth.gamevault.common.application.exception.InternalServerException;
+import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
 import org.apache.logging.log4j.util.Strings;
 
 import java.util.List;

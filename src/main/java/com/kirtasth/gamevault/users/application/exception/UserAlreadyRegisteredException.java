@@ -1,6 +1,6 @@
 package com.kirtasth.gamevault.users.application.exception;
 
-import com.kirtasth.gamevault.common.infrastructure.exception.ResourceConflictException;
+import com.kirtasth.gamevault.common.application.exception.ResourceConflictException;
 
 public class UserAlreadyRegisteredException extends ResourceConflictException {
     public UserAlreadyRegisteredException() {

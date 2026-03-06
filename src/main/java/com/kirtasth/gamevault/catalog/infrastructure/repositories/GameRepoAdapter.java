@@ -11,12 +11,14 @@ import com.kirtasth.gamevault.catalog.infrastructure.repositories.jpa.DeveloperR
 import com.kirtasth.gamevault.catalog.infrastructure.repositories.jpa.GameRepository;
 import com.kirtasth.gamevault.catalog.infrastructure.specifications.GameEntitySpecification;
 import com.kirtasth.gamevault.common.infrastructure.PageMapper;
-import com.kirtasth.gamevault.common.models.page.Page;
-import com.kirtasth.gamevault.common.models.page.PageRequest;
+import com.kirtasth.gamevault.common.domain.models.page.Page;
+import com.kirtasth.gamevault.common.domain.models.page.PageRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
@@ -101,6 +103,15 @@ public class GameRepoAdapter implements GameRepoPort {
         );
 
         var page = this.gameRepository.findAll(spec, pageable).map(mapper::toGame);
+        return this.pageMapper.toDomain(page);
+    }
+
+    @Override
+    public Page<Game> findAllByIds(List<Long> gameIds, PageRequest pageRequest) {
+        var pageable = this.pageMapper.toSpring(pageRequest);
+
+        var page = this.gameRepository.findAllByIdIn(gameIds, pageable).map(mapper::toGame);
+
         return this.pageMapper.toDomain(page);
     }
 }

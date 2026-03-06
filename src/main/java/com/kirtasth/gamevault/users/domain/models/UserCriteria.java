@@ -1,6 +1,6 @@
 package com.kirtasth.gamevault.users.domain.models;
 
-import com.kirtasth.gamevault.common.models.enums.RoleEnum;
+import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
 import lombok.*;
 
 import java.time.Instant;

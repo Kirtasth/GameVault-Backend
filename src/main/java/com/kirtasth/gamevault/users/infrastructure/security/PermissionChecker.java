@@ -1,6 +1,6 @@
 package com.kirtasth.gamevault.users.infrastructure.security;
 
-import com.kirtasth.gamevault.common.models.enums.RoleEnum;
+import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
 import com.kirtasth.gamevault.users.domain.models.AuthUser;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;

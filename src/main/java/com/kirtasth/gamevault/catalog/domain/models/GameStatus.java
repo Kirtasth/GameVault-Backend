@@ -1,6 +1,6 @@
 package com.kirtasth.gamevault.catalog.domain.models;
 
-import com.kirtasth.gamevault.common.models.enums.GameStatusEnum;
+import com.kirtasth.gamevault.common.domain.models.enums.GameStatusEnum;
 import lombok.Builder;
 
 import java.time.Instant;

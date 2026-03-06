@@ -5,9 +5,9 @@ import com.kirtasth.gamevault.catalog.domain.ports.in.GameServicePort;
 import com.kirtasth.gamevault.catalog.domain.ports.out.GameRepoPort;
 import com.kirtasth.gamevault.common.domain.ports.out.ImageStoragePort;
 import com.kirtasth.gamevault.catalog.domain.ports.out.UserValidationPort;
-import com.kirtasth.gamevault.common.models.enums.RoleEnum;
-import com.kirtasth.gamevault.common.models.page.Page;
-import com.kirtasth.gamevault.common.models.page.PageRequest;
+import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
+import com.kirtasth.gamevault.common.domain.models.page.Page;
+import com.kirtasth.gamevault.common.domain.models.page.PageRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -71,5 +71,10 @@ public class GameServiceAdapter implements GameServicePort {
     @Override
     public Page<Game> listDevGames(Long developerId, PageRequest pageRequest, GameCriteria gameCriteria) {
         return gameRepo.findAllByDevId(developerId, pageRequest, gameCriteria);
+    }
+
+    @Override
+    public Page<Game> listCustomGames(List<Long> gameIds, PageRequest pageRequest) {
+        return gameRepo.findAllByIds(gameIds, pageRequest);
     }
 }

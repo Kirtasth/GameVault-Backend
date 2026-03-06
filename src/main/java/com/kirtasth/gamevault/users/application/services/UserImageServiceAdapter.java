@@ -1,7 +1,7 @@
 package com.kirtasth.gamevault.users.application.services;
 
 import com.kirtasth.gamevault.common.domain.ports.out.ImageStoragePort;
-import com.kirtasth.gamevault.common.infrastructure.exception.CloudinaryImageUploadException;
+import com.kirtasth.gamevault.common.application.exception.CloudinaryImageUploadException;
 import com.kirtasth.gamevault.users.domain.ports.in.UserImageServicePort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

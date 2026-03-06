@@ -37,8 +37,8 @@ CREATE TABLE "auth"."roles"
     "id"          bigserial PRIMARY KEY,
     "role"        user_role UNIQUE NOT NULL,
     "description" text,
-    "created_at"  timestamp           NOT NULL DEFAULT (now()),
-    "updated_at"  timestamp           NOT NULL DEFAULT (now()),
+    "created_at"  timestamp        NOT NULL DEFAULT (now()),
+    "updated_at"  timestamp        NOT NULL DEFAULT (now()),
     "deleted_at"  timestamp
 );
 
@@ -97,12 +97,12 @@ CREATE TYPE "game_status" AS ENUM (
 
 CREATE TABLE "catalog"."developers"
 (
-    "id"           bigint   PRIMARY KEY,
-    "name"         varchar(255) UNIQUE NOT NULL,
-    "description"  text,
-    "created_at"   timestamp           NOT NULL DEFAULT (now()),
-    "updated_at"   timestamp           NOT NULL DEFAULT (now()),
-    "deleted_at"   timestamp
+    "id"          bigint PRIMARY KEY,
+    "name"        varchar(255) UNIQUE NOT NULL,
+    "description" text,
+    "created_at"  timestamp           NOT NULL DEFAULT (now()),
+    "updated_at"  timestamp           NOT NULL DEFAULT (now()),
+    "deleted_at"  timestamp
 );
 
 CREATE TABLE "catalog"."games"
@@ -172,40 +172,52 @@ ALTER TABLE "catalog"."game_tags_assignments"
 
 CREATE SCHEMA "cart";
 
-CREATE TABLE "cart"."wishlist"
+CREATE TYPE "cart_status" AS ENUM (
+    'OPENED',
+    'CLOSED'
+);
+
+CREATE TABLE "cart"."wishlists"
 (
-    "user_id"  bigint,
-    "game_id"  bigint,
-    "added_at" timestamp DEFAULT (now()),
+    "user_id"    bigint,
+    "game_id"    bigint,
+    "created_at" timestamp NOT NULL DEFAULT (now()),
     PRIMARY KEY ("user_id", "game_id")
 );
 
 CREATE TABLE "cart"."shopping_carts"
 (
-    "user_id"    bigint PRIMARY KEY,
-    "created_at" timestamp NOT NULL DEFAULT (now()),
-    "updated_at" timestamp NOT NULL DEFAULT (now())
+    "id"          bigserial PRIMARY KEY,
+    "user_id"     bigint      NOT NULL,
+    "status"      cart_status NOT NULL DEFAULT ('OPENED'),
+    "total_price" numeric     NOT NULL DEFAULT 0,
+    "created_at"  timestamp   NOT NULL DEFAULT (now()),
+    "updated_at"  timestamp   NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE "cart"."cart_items"
 (
     "id"                bigserial PRIMARY KEY,
-    "user_id"           bigint  NOT NULL,
-    "game_id"           bigint  NOT NULL,
-    "price_at_addition" numeric NOT NULL
+    "cart_id"           bigint    NOT NULL,
+    "game_id"           bigint    NOT NULL,
+    "quantity"          int       NOT NULL DEFAULT 1,
+    "price_at_addition" numeric   NOT NULL,
+    "created_at"        timestamp NOT NULL DEFAULT (now()),
+    "updated_at"        timestamp NOT NULL DEFAULT (now()),
+    UNIQUE ("cart_id", "game_id")
 );
 
-ALTER TABLE "cart"."wishlist"
+ALTER TABLE "cart"."wishlists"
     ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE "cart"."wishlist"
+ALTER TABLE "cart"."wishlists"
     ADD FOREIGN KEY ("game_id") REFERENCES "catalog"."games" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE "cart"."shopping_carts"
     ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE "cart"."shopping_carts"
-    ADD FOREIGN KEY ("user_id") REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "cart"."cart_items"
+    ADD FOREIGN KEY ("cart_id") REFERENCES "cart"."shopping_carts" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE "cart"."cart_items"
     ADD FOREIGN KEY ("game_id") REFERENCES "catalog"."games" ("id") ON DELETE CASCADE ON UPDATE CASCADE;

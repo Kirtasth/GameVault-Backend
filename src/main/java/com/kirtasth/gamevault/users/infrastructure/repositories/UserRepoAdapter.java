@@ -1,9 +1,9 @@
 package com.kirtasth.gamevault.users.infrastructure.repositories;
 
 import com.kirtasth.gamevault.common.infrastructure.PageMapper;
-import com.kirtasth.gamevault.common.models.enums.RoleEnum;
-import com.kirtasth.gamevault.common.models.page.Page;
-import com.kirtasth.gamevault.common.models.page.PageRequest;
+import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
+import com.kirtasth.gamevault.common.domain.models.page.Page;
+import com.kirtasth.gamevault.common.domain.models.page.PageRequest;
 import com.kirtasth.gamevault.users.application.exception.RoleAssignmentException;
 import com.kirtasth.gamevault.users.application.exception.RoleNotFoundException;
 import com.kirtasth.gamevault.users.application.exception.UserAlreadyRegisteredException;

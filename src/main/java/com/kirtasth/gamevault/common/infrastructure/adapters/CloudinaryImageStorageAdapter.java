@@ -2,14 +2,16 @@ package com.kirtasth.gamevault.common.infrastructure.adapters;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.kirtasth.gamevault.common.infrastructure.exception.CloudinaryImageUploadException;
+import com.kirtasth.gamevault.common.application.exception.CloudinaryImageUploadException;
 import com.kirtasth.gamevault.common.domain.ports.out.ImageStoragePort;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
 @Component
+@Profile("!test")
 @RequiredArgsConstructor
 public class CloudinaryImageStorageAdapter implements ImageStoragePort {
 
