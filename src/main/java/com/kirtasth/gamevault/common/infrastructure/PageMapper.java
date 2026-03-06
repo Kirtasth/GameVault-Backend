@@ -1,7 +1,7 @@
 package com.kirtasth.gamevault.common.infrastructure;
 
-import com.kirtasth.gamevault.common.models.page.Page;
-import com.kirtasth.gamevault.common.models.page.PageRequest;
+import com.kirtasth.gamevault.common.domain.models.page.Page;
+import com.kirtasth.gamevault.common.domain.models.page.PageRequest;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.springframework.data.domain.Pageable;

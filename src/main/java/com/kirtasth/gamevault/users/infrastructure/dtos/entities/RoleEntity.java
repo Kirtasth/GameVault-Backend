@@ -1,6 +1,6 @@
 package com.kirtasth.gamevault.users.infrastructure.dtos.entities;
 
-import com.kirtasth.gamevault.common.models.enums.RoleEnum;
+import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

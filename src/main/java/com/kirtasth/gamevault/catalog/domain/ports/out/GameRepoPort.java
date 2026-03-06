@@ -5,8 +5,10 @@ import com.kirtasth.gamevault.catalog.application.exception.GameNotFoundExceptio
 import com.kirtasth.gamevault.catalog.domain.models.Developer;
 import com.kirtasth.gamevault.catalog.domain.models.Game;
 import com.kirtasth.gamevault.catalog.domain.models.GameCriteria;
-import com.kirtasth.gamevault.common.models.page.Page;
-import com.kirtasth.gamevault.common.models.page.PageRequest;
+import com.kirtasth.gamevault.common.domain.models.page.Page;
+import com.kirtasth.gamevault.common.domain.models.page.PageRequest;
+
+import java.util.List;
 
 public interface GameRepoPort {
 
@@ -21,4 +23,6 @@ public interface GameRepoPort {
     void updateImageUrl(Long gameId, String imageUrl);
 
     Page<Game> findAllByDevId(Long developerId, PageRequest pageRequest, GameCriteria gameCriteria);
+
+    Page<Game> findAllByIds(List<Long> gameIds, PageRequest pageRequest);
 }

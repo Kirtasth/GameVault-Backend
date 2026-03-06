@@ -1,6 +1,6 @@
 package com.kirtasth.gamevault.users.infrastructure.specifications;
 
-import com.kirtasth.gamevault.common.models.enums.RoleEnum;
+import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
 import com.kirtasth.gamevault.users.infrastructure.dtos.entities.RoleEntity;
 import com.kirtasth.gamevault.users.infrastructure.dtos.entities.UserEntity;
 import com.kirtasth.gamevault.users.infrastructure.dtos.entities.UserRoleEntity;

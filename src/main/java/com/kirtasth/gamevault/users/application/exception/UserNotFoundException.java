@@ -1,6 +1,6 @@
 package com.kirtasth.gamevault.users.application.exception;
 
-import com.kirtasth.gamevault.common.infrastructure.exception.ResourceNotFoundException;
+import com.kirtasth.gamevault.common.application.exception.ResourceNotFoundException;
 
 public class UserNotFoundException extends ResourceNotFoundException {
     public UserNotFoundException(String searchValue) {

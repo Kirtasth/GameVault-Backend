@@ -1,8 +1,8 @@
 package com.kirtasth.gamevault.users.domain.ports.out;
 
-import com.kirtasth.gamevault.common.models.enums.RoleEnum;
-import com.kirtasth.gamevault.common.models.page.Page;
-import com.kirtasth.gamevault.common.models.page.PageRequest;
+import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
+import com.kirtasth.gamevault.common.domain.models.page.Page;
+import com.kirtasth.gamevault.common.domain.models.page.PageRequest;
 import com.kirtasth.gamevault.users.application.exception.RoleNotFoundException;
 import com.kirtasth.gamevault.users.application.exception.UserAlreadyRegisteredException;
 import com.kirtasth.gamevault.users.application.exception.UserNotFoundException;

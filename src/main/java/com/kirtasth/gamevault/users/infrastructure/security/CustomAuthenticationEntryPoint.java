@@ -27,9 +27,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             HttpServletRequest request,
             HttpServletResponse response,
             AuthenticationException authException
-    ) throws IOException, ServletException {
-        log.warn("Unauthorized error: {}", authException.getMessage());
-
+    ) throws IOException {
         HttpStatus status = HttpStatus.UNAUTHORIZED;
         var errorResponse = new ErrorResponse(
                 status.value(),

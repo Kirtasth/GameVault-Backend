@@ -1,10 +1,10 @@
 package com.kirtasth.gamevault.common.infrastructure.global_exception;
 
 
-import com.kirtasth.gamevault.common.infrastructure.exception.InternalServerException;
-import com.kirtasth.gamevault.common.infrastructure.exception.ResourceConflictException;
-import com.kirtasth.gamevault.common.infrastructure.exception.ResourceNotFoundException;
-import com.kirtasth.gamevault.common.infrastructure.exception.UnauthorizedException;
+import com.kirtasth.gamevault.common.application.exception.InternalServerException;
+import com.kirtasth.gamevault.common.application.exception.ResourceConflictException;
+import com.kirtasth.gamevault.common.application.exception.ResourceNotFoundException;
+import com.kirtasth.gamevault.common.application.exception.UnauthorizedException;
 import com.kirtasth.gamevault.common.infrastructure.responses.ErrorResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -93,7 +93,7 @@ public class GlobalExceptionHandler {
         var errorRes = new ErrorResponse(
                 httpCode.value(),
                 "Internal Server Error",
-                ex.getMessage());
+                "Something went wrong in the server");
         log.error("Internal server controlled error: {} With cause: {}.",
                 ex.getMessage(), ex.getCause() == null ? null : ex.getCause().getClass().getSimpleName());
         return new ResponseEntity<>(errorRes, httpCode);
@@ -105,7 +105,7 @@ public class GlobalExceptionHandler {
         var errorRes = new ErrorResponse(
                 httpCode.value(),
                 "Internal Server Error",
-                ex.getMessage());
+                "Something went wrong in the server");
         log.error("Internal server uncontrolled error: {} With cause: {}.",
                 ex.getMessage(), ex.getCause() == null ? null : ex.getCause().getClass().getSimpleName());
         return new ResponseEntity<>(errorRes, httpCode);

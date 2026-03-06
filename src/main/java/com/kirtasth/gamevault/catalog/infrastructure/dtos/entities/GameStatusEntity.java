@@ -1,7 +1,7 @@
 package com.kirtasth.gamevault.catalog.infrastructure.dtos.entities;
 
 
-import com.kirtasth.gamevault.common.models.enums.GameStatusEnum;
+import com.kirtasth.gamevault.common.domain.models.enums.GameStatusEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

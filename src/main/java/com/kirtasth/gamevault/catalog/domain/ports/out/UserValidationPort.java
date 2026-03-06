@@ -1,6 +1,6 @@
 package com.kirtasth.gamevault.catalog.domain.ports.out;
 
-import com.kirtasth.gamevault.common.models.enums.RoleEnum;
+import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
 
 import java.util.List;
 

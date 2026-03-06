@@ -1,6 +1,6 @@
 package com.kirtasth.gamevault.users.infrastructure.config;
 
-import com.kirtasth.gamevault.common.models.enums.RoleEnum;
+import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
 import com.kirtasth.gamevault.users.infrastructure.security.JwtAuthenticationFilter;
 import com.kirtasth.gamevault.users.infrastructure.security.PermissionChecker;
 import lombok.RequiredArgsConstructor;
@@ -62,8 +62,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/auth").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").access(
-                                permissionChecker.isAuthenticated()
-                        )
+                                permissionChecker.isAuthenticated())
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/{userId}").access(
                                 permissionChecker.isOwnerOrAdmin("userId"))
                         .requestMatchers(HttpMethod.PUT, "/api/v1/users/{userId}").access(
@@ -74,9 +73,25 @@ public class SecurityConfig {
                                 permissionChecker.isAuthenticated())
                         .requestMatchers(HttpMethod.POST, "/api/v1/catalog").access(
                                 permissionChecker.hasRole(RoleEnum.DEVELOPER))
+                        .requestMatchers(HttpMethod.GET, "/api/v1/catalog/my-games").access(
+                                permissionChecker.hasRole(RoleEnum.DEVELOPER))
+                        .requestMatchers(HttpMethod.GET, "/api/v1/catalog/purchased-games").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/catalog/custom-game-list").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/catalog").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/catalog/my-games/{developerId}").access(
-                                permissionChecker.isOwnerOrAdmin("developerId"))
+                        .requestMatchers(HttpMethod.GET, "/api/v1/cart").access(
+                                permissionChecker.isAuthenticated())
+                        .requestMatchers(HttpMethod.POST, "/api/v1/cart").access(
+                                permissionChecker.isAuthenticated())
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/cart/items/{itemId}").access(
+                                permissionChecker.isAuthenticated())
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/cart").access(
+                                permissionChecker.isAuthenticated())
+                        .requestMatchers(HttpMethod.GET, "/api/v1/wishlist").access(
+                                permissionChecker.isAuthenticated())
+                        .requestMatchers(HttpMethod.POST, "/api/v1/wishlist/{gameId}").access(
+                                permissionChecker.isAuthenticated())
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/wishlist/{gameId}").access(
+                                permissionChecker.isAuthenticated())
 
 
                         .anyRequest().permitAll())
