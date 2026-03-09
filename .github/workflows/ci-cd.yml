@@ -3,7 +3,7 @@ name: GameVault CI/CD Pipeline
 on:
   push:
     branches:
-      - master
+      - pro
 
 jobs:
   build_and_test:

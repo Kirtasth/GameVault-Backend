@@ -25,7 +25,10 @@ spring:
     init:
       mode: always
 
-cloudinary:
-  cloud_name: ${CLOUDINARY_CLOUD_NAME}
-  api_key: ${CLOUDINARY_API_KEY}
-  api_secret: ${CLOUDINARY_API_SECRET}
+minio:
+  url:
+    internal: ${MINIO_INTERNAL_URL}
+    external: ${MINIO_EXTERNAL_URL}
+  access-key: ${MINIO_ACCESS_KEY}
+  secret-key: ${MINIO_SECRET_KEY}
+  bucket-name: ${MINIO_BUCKET}

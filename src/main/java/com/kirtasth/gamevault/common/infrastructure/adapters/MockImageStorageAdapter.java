@@ -2,13 +2,16 @@ package com.kirtasth.gamevault.common.infrastructure.adapters;
 
 import com.kirtasth.gamevault.common.domain.ports.out.ImageStoragePort;
 import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
-@Service
+@Component
 @Profile("test")
-public class CloudinaryMock implements ImageStoragePort {
+public class MockImageStorageAdapter implements ImageStoragePort {
+
+
     @Override
-    public String uploadAvatar(byte[] image, Long userId) {
+    public String uploadAvatar(MultipartFile image, Long userId) {
         return "";
     }
 
