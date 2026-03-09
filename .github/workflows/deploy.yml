@@ -1,0 +1,64 @@
+name: GameVault Backend Deploy Pipeline
+
+on:
+  push:
+    branches: [ pre ]
+
+jobs:
+  build_and_test:
+    runs-on: [self-hosted, local]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Give execute permission to mvnw
+        run: chmod +x mvnw
+      - name: Build, test and package project
+        run: ./mvnw clean test
+
+  build_docker_image:
+    runs-on: [self-hosted, local]
+    needs: [ build_and_test ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reload the Docker Compose
+        run: docker compose up -d --build gamevault-backend:latest
+
+  deploy:
+    runs-on: [self-hosted, local]
+    needs: [ build_docker_image ]
+    steps:
+      - name: Wait for the backend container to be ready
+        run: sleep 100
+      - name: Check the backend container status
+        run: |
+          echo "Pinging backend container..."
+          # Try 12 times (about 1 minute total) to get a successful response
+          for i in {1..12}; do
+            # Because the runner is in the same docker-compose network, 
+            # it can reach the backend using the internal container name and port
+            if curl -s -f http://backend:8080/actuator/health > /dev/null; then
+              echo "Backend is updated, online, and healthy!"
+              exit 0
+            fi
+            echo "Waiting for Spring Boot to finish booting... (Attempt $i/12)"
+            sleep 5
+          done
+          echo "Backend failed to respond in time. Deployment might be stuck."
+          exit 1
