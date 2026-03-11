@@ -34,5 +34,12 @@ jobs:
     needs: [ test ]
     steps:
       - uses: actions/checkout@v4
-      - name: Reload the Docker Image
+
+      - name: Build the Docker Image
         run: docker build -t gamevault-backend:latest .
+
+      - name: Deploy the Container
+        run: docker compose -f /infra/compose.yaml up -d --no-deps --force-recreate backend
+
+      - name: Clean up old unused images
+        run: docker image prune -f
