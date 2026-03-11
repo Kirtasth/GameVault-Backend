@@ -3,7 +3,6 @@ package com.kirtasth.gamevault.catalog.infrastructure.mappers;
 import com.kirtasth.gamevault.catalog.domain.models.*;
 import com.kirtasth.gamevault.catalog.infrastructure.dtos.entities.DeveloperEntity;
 import com.kirtasth.gamevault.catalog.infrastructure.dtos.entities.GameEntity;
-import com.kirtasth.gamevault.catalog.infrastructure.dtos.entities.GameStatusEntity;
 import com.kirtasth.gamevault.catalog.infrastructure.dtos.requests.GameCriteriaRequest;
 import com.kirtasth.gamevault.catalog.infrastructure.dtos.requests.NewDeveloperRequest;
 import com.kirtasth.gamevault.catalog.infrastructure.dtos.requests.NewGameRequest;
