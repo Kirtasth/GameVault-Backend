@@ -5,7 +5,7 @@ on:
     branches: [ pre ]
 
 jobs:
-  build_and_test:
+  test:
     runs-on: [self-hosted, local]
     steps:
       - name: Checkout code
@@ -31,34 +31,8 @@ jobs:
 
   build_docker_image:
     runs-on: [self-hosted, local]
-    needs: [ build_and_test ]
+    needs: [ test ]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Reload the Docker Compose
-        run: docker compose up -d --build gamevault-backend:latest
-
-  deploy:
-    runs-on: [self-hosted, local]
-    needs: [ build_docker_image ]
-    steps:
-      - name: Wait for the backend container to be ready
-        run: sleep 100
-      - name: Check the backend container status
-        run: |
-          echo "Pinging backend container..."
-          # Try 12 times (about 1 minute total) to get a successful response
-          for i in {1..12}; do
-            # Because the runner is in the same docker-compose network, 
-            # it can reach the backend using the internal container name and port
-            if curl -s -f http://backend:8080/actuator/health > /dev/null; then
-              echo "Backend is updated, online, and healthy!"
-              exit 0
-            fi
-            echo "Waiting for Spring Boot to finish booting... (Attempt $i/12)"
-            sleep 5
-          done
-          echo "Backend failed to respond in time. Deployment might be stuck."
-          exit 1
+      - uses: actions/checkout@v4
+      - name: Reload the Docker Image
+        run: docker build -t gamevault-backend:latest .
