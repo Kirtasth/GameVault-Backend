@@ -3,6 +3,8 @@ package com.kirtasth.gamevault;
 import com.kirtasth.gamevault.common.domain.ports.out.ImageStoragePort;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -10,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -21,14 +24,30 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @ActiveProfiles("test")
 public class GameVaultApplicationTests {
 
+    static final Network network = new Network() {
+        @Override
+        public String getId() {
+            return "gamevault-net";
+        }
+
+        @Override
+        public void close() {
+        }
+
+        @Override
+        public Statement apply(Statement base, Description description) {
+            return base;
+        }
+    };
+
     @Container
     @ServiceConnection
     @SuppressWarnings("resource")
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16")
-            .withNetworkMode("host")
             .withDatabaseName("testdb")
             .withUsername("test")
-            .withPassword("test");
+            .withPassword("test")
+            .withNetwork(network);
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
