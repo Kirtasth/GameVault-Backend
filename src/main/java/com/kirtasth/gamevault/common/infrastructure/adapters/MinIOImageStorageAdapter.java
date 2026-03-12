@@ -16,12 +16,9 @@ import java.io.ByteArrayInputStream;
 @RequiredArgsConstructor
 public class MinIOImageStorageAdapter implements ImageStoragePort {
 
-    @Value("${minio.url.external}")
-    private String externalUrl;
-
     private final MinioClient client;
 
-    @Value("minio.bucket-name")
+    @Value("${minio.bucket-name}")
     private String bucketName;
 
     @Override
@@ -36,7 +33,7 @@ public class MinIOImageStorageAdapter implements ImageStoragePort {
                     .build()
             );
 
-            return externalUrl + "/" + bucketName + "/users/" + userId + "/avatar";
+            return "/images/users/" + userId + "/avatar";
         } catch (Exception e) {
             throw new ImageUploadException(e.getMessage());
         }
@@ -54,7 +51,7 @@ public class MinIOImageStorageAdapter implements ImageStoragePort {
                     .build()
             );
 
-            return externalUrl + "/" + bucketName + "/games/" + gameId + "/main";
+            return "/images/games/" + gameId + "/main";
         } catch (Exception e) {
             throw new ImageUploadException(e.getMessage());
         }

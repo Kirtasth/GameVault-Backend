@@ -40,6 +40,8 @@ jobs:
 
       - name: Deploy the Container
         run: docker compose -f /infra/compose.yaml up -d --no-deps --force-recreate backend
+      - name: Refresh Frontend DNS
+        run: docker compose -f /infra/compose.yaml exec frontend nginx -s reload
 
       - name: Clean up old unused images
         run: docker image prune -f
