@@ -3,6 +3,7 @@ package com.kirtasth.gamevault.users.application.services;
 import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
 import com.kirtasth.gamevault.common.domain.models.page.Page;
 import com.kirtasth.gamevault.common.domain.models.page.PageRequest;
+import com.kirtasth.gamevault.users.application.exception.UserNotFoundException;
 import com.kirtasth.gamevault.users.domain.models.NewUser;
 import com.kirtasth.gamevault.users.domain.models.Role;
 import com.kirtasth.gamevault.users.domain.models.UpdatedUser;
@@ -28,7 +29,9 @@ public class UserServiceAdapter implements UserServicePort {
 
     @Override
     public User getUserByEmail(String email) {
-        return this.userRepo.findUserByEmail(email);
+        return this.userRepo.findUserByEmail(email).orElseThrow(
+                () -> new UserNotFoundException(email)
+        );
     }
 
     @Override
@@ -102,7 +105,9 @@ public class UserServiceAdapter implements UserServicePort {
 
     @Override
     public Long getUserId(String email) {
-        return this.userRepo.findUserByEmail(email).getId();
+        return this.userRepo.findUserByEmail(email).orElseThrow(
+                () -> new UserNotFoundException(email)
+        ).getId();
     }
 
 }

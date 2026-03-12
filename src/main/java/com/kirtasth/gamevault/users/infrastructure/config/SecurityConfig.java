@@ -50,6 +50,7 @@ public class SecurityConfig {
 
                 .exceptionHandling(exception -> exception.
                         authenticationEntryPoint(authenticationEntryPoint))
+                
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

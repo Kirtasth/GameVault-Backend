@@ -8,12 +8,13 @@ import com.kirtasth.gamevault.users.domain.models.User;
 import com.kirtasth.gamevault.users.domain.models.UserCriteria;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserRepoPort {
 
     User findUserById(Long id);
 
-    User findUserByEmail(String email);
+    Optional<User> findUserByEmail(String email);
 
     Page<User> findAllUsersWithCriteria(UserCriteria criteria, PageRequest pageRequest);
 

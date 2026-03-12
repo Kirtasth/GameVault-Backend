@@ -47,10 +47,8 @@ public class UserRepoAdapter implements UserRepoPort {
     }
 
     @Override
-    public User findUserByEmail(String email) {
-        return this.userRepository.findByEmail(email).map(userMapper::toUser).orElseThrow(
-                () -> new UserNotFoundException(email)
-        );
+    public Optional<User> findUserByEmail(String email) {
+        return this.userRepository.findByEmail(email).map(userMapper::toUser);
     }
 
     @Override
