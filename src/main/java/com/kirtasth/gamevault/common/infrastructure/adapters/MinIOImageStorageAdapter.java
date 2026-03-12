@@ -33,7 +33,7 @@ public class MinIOImageStorageAdapter implements ImageStoragePort {
                     .build()
             );
 
-            return "/images/" + "/users/" + userId + "/avatar";
+            return "/images/users/" + userId + "/avatar";
         } catch (Exception e) {
             throw new ImageUploadException(e.getMessage());
         }
@@ -51,7 +51,7 @@ public class MinIOImageStorageAdapter implements ImageStoragePort {
                     .build()
             );
 
-            return "/images/" + "/games/" + gameId + "/main";
+            return "/images/games/" + gameId + "/main";
         } catch (Exception e) {
             throw new ImageUploadException(e.getMessage());
         }
