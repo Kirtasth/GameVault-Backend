@@ -107,7 +107,8 @@ public class GlobalExceptionHandler {
                 "Internal Server Error",
                 "Something went wrong in the server");
         log.error("Internal server uncontrolled error: {} With cause: {}.",
-                ex.getMessage(), ex.getCause() == null ? null : ex.getCause().getClass().getSimpleName());
+                ex.getMessage(), ex.getCause() == null ? null : ex.getCause().getClass().getSimpleName(),
+                ex);
         return new ResponseEntity<>(errorRes, httpCode);
     }
 }
