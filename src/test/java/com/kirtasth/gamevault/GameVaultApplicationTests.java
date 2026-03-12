@@ -25,6 +25,7 @@ public class GameVaultApplicationTests {
     @ServiceConnection
     @SuppressWarnings("resource")
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16")
+            .withNetworkMode("host")
             .withDatabaseName("testdb")
             .withUsername("test")
             .withPassword("test");
