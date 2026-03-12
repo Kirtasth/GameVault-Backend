@@ -18,7 +18,7 @@ public class MinIOImageStorageAdapter implements ImageStoragePort {
 
     private final MinioClient client;
 
-    @Value("minio.bucket-name")
+    @Value("${minio.bucket-name}")
     private String bucketName;
 
     @Override
@@ -33,7 +33,7 @@ public class MinIOImageStorageAdapter implements ImageStoragePort {
                     .build()
             );
 
-            return "/images/" + bucketName + "/users/" + userId + "/avatar";
+            return "/images/" + "/users/" + userId + "/avatar";
         } catch (Exception e) {
             throw new ImageUploadException(e.getMessage());
         }
@@ -51,7 +51,7 @@ public class MinIOImageStorageAdapter implements ImageStoragePort {
                     .build()
             );
 
-            return "/images/" + bucketName + "/games/" + gameId + "/main";
+            return "/images/" + "/games/" + gameId + "/main";
         } catch (Exception e) {
             throw new ImageUploadException(e.getMessage());
         }
