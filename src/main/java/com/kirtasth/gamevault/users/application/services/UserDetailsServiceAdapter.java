@@ -16,7 +16,7 @@ public class UserDetailsServiceAdapter implements UserDetailsService {
     private final UserServicePort userServicePort;
 
     @Override
-    public UserDetails loadUserByUsername(String username) {
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         try {
             var serviceUser = userServicePort.getUserByEmail(username);

@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -53,6 +54,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ErrorResponse> handleUnauthorizedException(UnauthorizedException ex) {
+        var httpCode = HttpStatus.UNAUTHORIZED;
+        var errorRes = new ErrorResponse(
+                httpCode.value(),
+                "Unauthorized",
+                ex.getMessage());
+        return new ResponseEntity<>(errorRes, httpCode);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex) {
         var httpCode = HttpStatus.UNAUTHORIZED;
         var errorRes = new ErrorResponse(
                 httpCode.value(),
