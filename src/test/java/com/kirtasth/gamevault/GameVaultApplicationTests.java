@@ -1,6 +1,5 @@
 package com.kirtasth.gamevault;
 
-import com.github.dockerjava.api.model.HostConfig;
 import com.kirtasth.gamevault.common.domain.ports.out.ImageStoragePort;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
@@ -28,15 +27,7 @@ public class GameVaultApplicationTests {
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16")
             .withDatabaseName("testdb")
             .withUsername("test")
-            .withPassword("test")
-            .withCreateContainerCmdModifier(cmd -> {
-                HostConfig hostConfig = cmd.getHostConfig();
-                if (hostConfig == null) {
-                    hostConfig = new HostConfig();
-                    cmd.withHostConfig(hostConfig);
-                }
-                hostConfig.withNetworkMode("gamevault-net");
-            });
+            .withPassword("test");
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
