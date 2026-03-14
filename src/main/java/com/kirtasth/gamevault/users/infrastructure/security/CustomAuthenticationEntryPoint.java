@@ -1,7 +1,7 @@
 package com.kirtasth.gamevault.users.infrastructure.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kirtasth.gamevault.common.infrastructure.responses.ErrorResponse;
+import com.kirtasth.gamevault.common.infrastructure.dtos.responses.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
