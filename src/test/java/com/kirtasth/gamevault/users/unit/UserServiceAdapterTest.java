@@ -1,6 +1,7 @@
 package com.kirtasth.gamevault.users.unit;
 
 import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
+import com.kirtasth.gamevault.config.ContainersConfig;
 import com.kirtasth.gamevault.users.application.exception.UserNotFoundException;
 import com.kirtasth.gamevault.users.application.services.UserServiceAdapter;
 import com.kirtasth.gamevault.users.domain.models.NewUser;
@@ -8,20 +9,28 @@ import com.kirtasth.gamevault.users.domain.models.Role;
 import com.kirtasth.gamevault.users.domain.models.UpdatedUser;
 import com.kirtasth.gamevault.users.domain.models.User;
 import com.kirtasth.gamevault.users.domain.ports.out.UserRepoPort;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@Import(ContainersConfig.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class UserServiceAdapterTest {
 
     @Mock

@@ -1,4 +1,4 @@
-package com.kirtasth.gamevault.common.infrastructure.responses;
+package com.kirtasth.gamevault.common.infrastructure.dtos.responses;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
