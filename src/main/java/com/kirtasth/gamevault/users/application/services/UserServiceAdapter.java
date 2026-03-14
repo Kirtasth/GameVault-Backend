@@ -70,7 +70,7 @@ public class UserServiceAdapter implements UserServicePort {
         if (updatedUser.getEmail() != null) {
             user.setEmail(updatedUser.getEmail());
         }
-        if (updatedUser.getPassword() != null) {
+        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
             user.setPassword(updatedUser.getPassword());
         }
         if (updatedUser.getAvatarUrl() != null) {
