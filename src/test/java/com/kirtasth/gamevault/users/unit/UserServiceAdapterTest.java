@@ -1,7 +1,6 @@
 package com.kirtasth.gamevault.users.unit;
 
 import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
-import com.kirtasth.gamevault.config.ContainersConfig;
 import com.kirtasth.gamevault.users.application.exception.UserNotFoundException;
 import com.kirtasth.gamevault.users.application.services.UserServiceAdapter;
 import com.kirtasth.gamevault.users.domain.models.NewUser;
@@ -9,15 +8,11 @@ import com.kirtasth.gamevault.users.domain.models.Role;
 import com.kirtasth.gamevault.users.domain.models.UpdatedUser;
 import com.kirtasth.gamevault.users.domain.models.User;
 import com.kirtasth.gamevault.users.domain.ports.out.UserRepoPort;
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,11 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Import(ContainersConfig.class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@ExtendWith(MockitoExtension.class)
 class UserServiceAdapterTest {
 
     @Mock
@@ -67,7 +58,7 @@ class UserServiceAdapterTest {
 
         Role role = new Role();
         role.setRole(RoleEnum.USER);
-        
+
         when(userRepo.findRole(RoleEnum.USER)).thenReturn(role);
         when(userRepo.saveUser(any(User.class))).thenAnswer(i -> i.getArguments()[0]);
 
@@ -104,7 +95,7 @@ class UserServiceAdapterTest {
     void canCreateGames_ShouldReturnTrue_WhenUserIsAdminOrDeveloper() {
         Role adminRole = new Role();
         adminRole.setRole(RoleEnum.ADMIN);
-        
+
         when(userRepo.findRolesByUserId(1L)).thenReturn(List.of(adminRole));
 
         assertTrue(userServiceAdapter.canCreateGames(1L));
@@ -114,7 +105,7 @@ class UserServiceAdapterTest {
     void canCreateGames_ShouldReturnFalse_WhenUserIsOnlyUser() {
         Role userRole = new Role();
         userRole.setRole(RoleEnum.USER);
-        
+
         when(userRepo.findRolesByUserId(1L)).thenReturn(List.of(userRole));
 
         assertFalse(userServiceAdapter.canCreateGames(1L));

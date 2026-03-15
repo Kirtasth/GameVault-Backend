@@ -1,21 +1,16 @@
 package com.kirtasth.gamevault.users.unit;
 
 import com.kirtasth.gamevault.common.domain.ports.out.ImageStoragePort;
-import com.kirtasth.gamevault.config.ContainersConfig;
 import com.kirtasth.gamevault.users.application.services.AuthServiceAdapter;
 import com.kirtasth.gamevault.users.domain.models.*;
 import com.kirtasth.gamevault.users.domain.ports.in.JwtServicePort;
 import com.kirtasth.gamevault.users.domain.ports.in.UserServicePort;
 import com.kirtasth.gamevault.users.domain.ports.out.AuthProviderPort;
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,11 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Import(ContainersConfig.class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@ExtendWith(MockitoExtension.class)
 class AuthServiceAdapterTest {
 
     @Mock
