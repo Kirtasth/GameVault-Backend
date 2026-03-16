@@ -5,14 +5,12 @@ import com.kirtasth.gamevault.common.domain.ports.out.ImageStoragePort;
 import io.minio.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 
 @Component
-@Profile("!test")
 @RequiredArgsConstructor
 public class MinIOImageStorageAdapter implements ImageStoragePort {
 

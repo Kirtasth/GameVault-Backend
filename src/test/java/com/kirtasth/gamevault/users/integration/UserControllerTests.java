@@ -3,7 +3,6 @@ package com.kirtasth.gamevault.users.integration;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kirtasth.gamevault.config.ContainersConfig;
-import com.kirtasth.gamevault.config.MockImageStoragePort;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.CredentialsRequest;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.NewUserRequest;
 import org.junit.jupiter.api.*;
@@ -21,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import({ContainersConfig.class, MockImageStoragePort.class})
+@Import({ContainersConfig.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class UserControllerTests {
