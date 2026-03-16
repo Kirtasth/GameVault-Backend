@@ -1,22 +1,18 @@
 package com.kirtasth.gamevault.config;
 
-import com.kirtasth.gamevault.common.domain.ports.out.ImageStoragePort;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-@TestConfiguration( proxyBeanMethods = false)
+@TestConfiguration(proxyBeanMethods = false)
 public class ContainersConfig {
 
     @Autowired
     PostgreSQLContainer<?> postgres;
 
-    @MockitoBean
-    ImageStoragePort imageStoragePort;
 
     @Bean
     @ServiceConnection
