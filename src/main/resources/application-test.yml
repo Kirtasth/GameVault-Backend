@@ -11,3 +11,9 @@ spring:
       jwt:
         expiration: 360_000
         refresh-expiration: 8_640_000
+  test:
+    database:
+      replace: none
+
+  flyway:
+    enabled: true

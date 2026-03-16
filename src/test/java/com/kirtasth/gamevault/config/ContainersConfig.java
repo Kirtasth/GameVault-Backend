@@ -1,38 +1,48 @@
 package com.kirtasth.gamevault.config;
 
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.annotation.Bean;
+import org.springframework.test.context.DynamicPropertyRegistrar;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-@TestConfiguration
+@TestConfiguration(proxyBeanMethods = false)
 public class ContainersConfig {
 
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16")
-            .withDatabaseName("testdb")
-            .withUsername("test")
-            .withPassword("test");
-
-    static final MinIOContainer minio = new MinIOContainer("minio/minio:RELEASE.2023-09-04T19-57-37Z")
-            .withUserName("test")
-            .withPassword("test1234")
-            .withReuse(true);
-
-    static {
-        postgres.start();
-        minio.start();
+    @Bean
+    @ServiceConnection
+    @SuppressWarnings("resource")
+    PostgreSQLContainer<?> postgres() {
+        return new PostgreSQLContainer<>("postgres:16-alpine")
+                .withDatabaseName("testdb")
+                .withUsername("test")
+                .withPassword("test");
     }
 
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("POSTGRES_URL", postgres::getJdbcUrl);
-        registry.add("POSTGRES_USER", postgres::getUsername);
-        registry.add("POSTGRES_PASSWORD", postgres::getPassword);
-        registry.add("MINIO_INTERNAL_URL", minio::getS3URL);
-        registry.add("MINIO_ACCESS_KEY", minio::getUserName);
-        registry.add("MINIO_SECRET_KEY", minio::getPassword);
-        registry.add("MINIO_BUCKET_NAME", () -> "gamevault-test");
+    @Bean
+    @SuppressWarnings("resource")
+    MinIOContainer minio() {
+        return new MinIOContainer("minio/minio")
+                .withUserName("test")
+                .withPassword("test1234")
+                .withReuse(true);
+    }
+
+    @Bean
+    DynamicPropertyRegistrar minioProperties(MinIOContainer minio, PostgreSQLContainer<?> postgres) {
+        return registry -> {
+            registry.add("spring.datasource.url", postgres::getJdbcUrl);
+            registry.add("spring.datasource.username", postgres::getUsername);
+            registry.add("spring.datasource.password", postgres::getPassword);
+            registry.add("spring.flyway.user", postgres::getUsername);
+            registry.add("spring.flyway.password", postgres::getPassword);
+            registry.add("spring.flyway.url", postgres::getJdbcUrl);
+            registry.add("minio.url.internal", minio::getS3URL);
+            registry.add("minio.access-key", minio::getUserName);
+            registry.add("minio.secret-key", minio::getPassword);
+            registry.add("minio.bucket-name", () -> "gamevault-test");
+        };
     }
 
 }
