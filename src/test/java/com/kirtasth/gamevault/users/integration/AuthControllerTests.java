@@ -3,6 +3,7 @@ package com.kirtasth.gamevault.users.integration;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kirtasth.gamevault.config.ContainersConfig;
+import com.kirtasth.gamevault.config.MockImageStoragePort;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.CredentialsRequest;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.NewUserRequest;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.RefreshTokenPetitionRequest;
@@ -24,7 +25,7 @@ import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(ContainersConfig.class)
+@Import({ContainersConfig.class, MockImageStoragePort.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AuthControllerTests {
