@@ -27,16 +27,13 @@ public class ContainersConfig {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("spring.flyway.user", postgres::getUsername);
-        registry.add("spring.flyway.password", postgres::getPassword);
-        registry.add("spring.flyway.url", postgres::getJdbcUrl);
-        registry.add("minio.url.internal", minio::getS3URL);
-        registry.add("minio.access-key", minio::getUserName);
-        registry.add("minio.secret-key", minio::getPassword);
-        registry.add("minio.bucket-name", () -> "gamevault-test");
+        registry.add("POSTGRES_URL", postgres::getJdbcUrl);
+        registry.add("POSTGRES_USER", postgres::getUsername);
+        registry.add("POSTGRES_PASSWORD", postgres::getPassword);
+        registry.add("MINIO_INTERNAL_URL", minio::getS3URL);
+        registry.add("MINIO_ACCESS_KEY", minio::getUserName);
+        registry.add("MINIO_SECRET_KEY", minio::getPassword);
+        registry.add("MINIO_BUCKET_NAME", () -> "gamevault-test");
     }
 
 }
