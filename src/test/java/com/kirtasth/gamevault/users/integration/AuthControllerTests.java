@@ -39,7 +39,7 @@ public class AuthControllerTests {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    @BeforeAll
+    @BeforeEach
     void setUp() {
         jdbcTemplate.execute("TRUNCATE auth.users, auth.user_roles, auth.refresh_tokens, auth.password_reset_tokens RESTART IDENTITY CASCADE");
     }
