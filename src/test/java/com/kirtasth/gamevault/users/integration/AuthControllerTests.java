@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -34,6 +35,14 @@ public class AuthControllerTests {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @BeforeAll
+    void setUp() {
+        jdbcTemplate.execute("TRUNCATE auth.users, auth.user_roles, auth.refresh_tokens, auth.password_reset_tokens RESTART IDENTITY CASCADE");
+    }
 
     @Test
     @Order(1)
