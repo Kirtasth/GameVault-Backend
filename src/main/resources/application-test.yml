@@ -6,3 +6,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  application:
+    security:
+      jwt:
+        expiration: 360_000
+        refresh-expiration: 8_640_000

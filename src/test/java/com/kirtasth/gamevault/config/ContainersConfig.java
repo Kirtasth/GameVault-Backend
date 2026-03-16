@@ -1,53 +1,42 @@
 package com.kirtasth.gamevault.config;
 
-import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.context.annotation.Bean;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-@TestConfiguration(proxyBeanMethods = false)
+@SpringBootTest
+@Testcontainers
 public class ContainersConfig {
 
-    @Autowired
-    PostgreSQLContainer<?> postgres;
-
-    @Autowired
-    MinIOContainer minio;
-
-    @Bean
-    @ServiceConnection
+    @Container
     @SuppressWarnings("resource")
-    static PostgreSQLContainer<?> postgres() {
-        return new PostgreSQLContainer<>("postgres:16")
-                .withDatabaseName("testdb")
-                .withUsername("test")
-                .withPassword("test");
-    }
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16")
+            .withDatabaseName("testdb")
+            .withUsername("test")
+            .withPassword("test");
 
-    @Bean
-    @SuppressWarnings("resource")
-    static MinIOContainer minio() {
-        return new MinIOContainer("minio/minio:RELEASE.2023-09-04T19-57-37Z")
-                .withUserName("test")
-                .withPassword("test1234")
-                .withReuse(true);
-    }
+    @Container
+    static MinIOContainer minio = new MinIOContainer("minio/minio:RELEASE.2023-09-04T19-57-37Z")
+            .withUserName("test")
+            .withPassword("test1234")
+            .withReuse(true);
 
-    @PostConstruct
-    void configureProperties() {
-        System.setProperty("spring.datasource.url", postgres.getJdbcUrl());
-        System.setProperty("spring.datasource.username", postgres.getUsername());
-        System.setProperty("spring.datasource.password", postgres.getPassword());
-        System.setProperty("spring.flyway.user", postgres.getUsername());
-        System.setProperty("spring.flyway.password", postgres.getPassword());
-        System.setProperty("spring.flyway.url", postgres.getJdbcUrl());
-        System.setProperty("minio.url.internal", minio.getS3URL());
-        System.setProperty("minio.access-key", minio.getUserName());
-        System.setProperty("minio.secret-key", minio.getPassword());
-        System.setProperty("minio.bucket-name", "gamevault-test");
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.flyway.user", postgres::getUsername);
+        registry.add("spring.flyway.password", postgres::getPassword);
+        registry.add("spring.flyway.url", postgres::getJdbcUrl);
+        registry.add("minio.url.internal", minio::getS3URL);
+        registry.add("minio.access-key", minio::getUserName);
+        registry.add("minio.secret-key", minio::getPassword);
+        registry.add("minio.bucket-name", () -> "gamevault-test");
     }
 
 }
