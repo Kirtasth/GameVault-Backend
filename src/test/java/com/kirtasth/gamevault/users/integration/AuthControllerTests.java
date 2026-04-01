@@ -1,19 +1,13 @@
 package com.kirtasth.gamevault.users.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kirtasth.gamevault.config.ContainersConfig;
+import com.kirtasth.gamevault.common.BaseIntegrationTest;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.CredentialsRequest;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.NewUserRequest;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.RefreshTokenPetitionRequest;
-import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.Duration;
@@ -23,19 +17,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Import({ContainersConfig.class})
-@Transactional
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class AuthControllerTests {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+public class AuthControllerTests extends BaseIntegrationTest {
 
     @Test
     @Order(1)
@@ -170,6 +152,21 @@ public class AuthControllerTests {
 
     @Test
     @Order(6)
+    void shouldFailWithInvalidToken() throws Exception {
+        mockMvc.perform(get("/api/v1/auth")
+                        .header("Authorization", "Bearer invalidtoken123"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @Order(7)
+    void shouldFailWithoutToken() throws Exception {
+        mockMvc.perform(get("/api/v1/auth"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @Order(8)
     void shouldLogout() throws Exception {
         // Register and login to get token
         NewUserRequest registerRequest = new NewUserRequest();
