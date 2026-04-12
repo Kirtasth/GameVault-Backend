@@ -10,9 +10,9 @@ import com.kirtasth.gamevault.catalog.infrastructure.mappers.CatalogMapper;
 import com.kirtasth.gamevault.catalog.infrastructure.repositories.jpa.DeveloperRepository;
 import com.kirtasth.gamevault.catalog.infrastructure.repositories.jpa.GameRepository;
 import com.kirtasth.gamevault.catalog.infrastructure.specifications.GameEntitySpecification;
-import com.kirtasth.gamevault.common.infrastructure.PageMapper;
 import com.kirtasth.gamevault.common.domain.models.page.Page;
 import com.kirtasth.gamevault.common.domain.models.page.PageRequest;
+import com.kirtasth.gamevault.common.infrastructure.PageMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.domain.Specification;
@@ -112,6 +112,25 @@ public class GameRepoAdapter implements GameRepoPort {
 
         var page = this.gameRepository.findAllByIdIn(gameIds, pageable).map(mapper::toGame);
 
+        return this.pageMapper.toDomain(page);
+    }
+
+    @Override
+    public Page<Game> findAllByIds(List<Long> gameIds, PageRequest pageRequest, GameCriteria gameCriteria) {
+        var pageable = this.pageMapper.toSpring(pageRequest);
+
+        Specification<GameEntity> spec = Specification.allOf(
+                this.gameEntitySpecification.idsIn(gameIds),
+                this.gameEntitySpecification.containsTitle(gameCriteria.title()),
+                this.gameEntitySpecification.containsDeveloper(gameCriteria.developerName()),
+                this.gameEntitySpecification.priceGreaterOrEqual(gameCriteria.minPrice()),
+                this.gameEntitySpecification.priceLessOrEqual(gameCriteria.maxPrice()),
+                this.gameEntitySpecification.releasedAfter(gameCriteria.fromReleaseTime()),
+                this.gameEntitySpecification.releasedBefore(gameCriteria.toReleaseTime()),
+                this.gameEntitySpecification.containsAllGameTags(gameCriteria.gameTags())
+        );
+
+        var page = this.gameRepository.findAll(spec, pageable).map(mapper::toGame);
         return this.pageMapper.toDomain(page);
     }
 }

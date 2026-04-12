@@ -1,7 +1,6 @@
 package com.kirtasth.gamevault.users.infrastructure.config;
 
 import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
-import com.kirtasth.gamevault.users.infrastructure.security.JwtAuthenticationFilter;
 import com.kirtasth.gamevault.users.infrastructure.security.PermissionChecker;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -92,6 +91,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/wishlist/{gameId}").access(
                                 permissionChecker.isAuthenticated())
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/wishlist/{gameId}").access(
+                                permissionChecker.isAuthenticated())
+                        .requestMatchers(HttpMethod.POST, "/api/v1/checkout/webhook").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/checkout").access(
                                 permissionChecker.isAuthenticated())
 
 

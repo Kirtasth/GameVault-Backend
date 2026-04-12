@@ -12,7 +12,6 @@ import com.kirtasth.gamevault.users.domain.models.AuthUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -104,7 +103,17 @@ public class CatalogController {
             @ModelAttribute GameCriteriaRequest gameCriteriaRequest,
             Authentication authentication
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(Page.empty(pageable));
+        var pageRequest = this.pageMapper.toDomain(pageable);
+        var gameCriteria = this.mapper.toGameCriteria(gameCriteriaRequest);
+
+        var userId = ((AuthUser) authentication.getPrincipal()).getId();
+
+        var result = this.gameService.listPurchasedGames(userId, pageRequest, gameCriteria);
+
+        var response = this.pageMapper.toSpring(result, pageable)
+                .map(this.mapper::toGameResponse);
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/custom-game-list")

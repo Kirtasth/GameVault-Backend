@@ -19,6 +19,9 @@ public class MinIOImageStorageAdapter implements ImageStoragePort {
     @Value("${minio.bucket-name}")
     private String bucketName;
 
+    @Value("${gamevault.api.url}")
+    private String apiUrl;
+
     @Override
     public String uploadAvatar(MultipartFile image, Long userId) {
         createBucketIfNotExists();
@@ -31,7 +34,7 @@ public class MinIOImageStorageAdapter implements ImageStoragePort {
                     .build()
             );
 
-            return "/images/users/" + userId + "/avatar";
+            return apiUrl + "/images/users/" + userId + "/avatar";
         } catch (Exception e) {
             throw new ImageUploadException(e.getMessage());
         }
@@ -49,7 +52,7 @@ public class MinIOImageStorageAdapter implements ImageStoragePort {
                     .build()
             );
 
-            return "/images/games/" + gameId + "/main";
+            return apiUrl + "/images/games/" + gameId + "/main";
         } catch (Exception e) {
             throw new ImageUploadException(e.getMessage());
         }

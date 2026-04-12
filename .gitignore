@@ -38,4 +38,6 @@ build/
 **/*.key
 
 ### GEMINI ###
+
 /.gemini/
+/.geminiignore

@@ -92,4 +92,13 @@ public class GameEntitySpecification {
             return root.get("id").in(subquery);
         });
     }
+
+    public Specification<GameEntity> idsIn(List<Long> gameIds) {
+        return (root, query, criteriaBuilder) -> {
+            if (gameIds == null || gameIds.isEmpty()) {
+                return criteriaBuilder.conjunction();
+            }
+            return root.get("id").in(gameIds);
+        };
+    }
 }

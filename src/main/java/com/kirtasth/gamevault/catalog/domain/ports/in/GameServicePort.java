@@ -19,4 +19,8 @@ public interface GameServicePort {
     Page<Game> listDevGames(Long developerId, PageRequest pageRequest, GameCriteria gameCriteria);
 
     Page<Game> listCustomGames(List<Long> gameIds, PageRequest pageRequest);
+
+    Page<Game> listPurchasedGames(Long userId, PageRequest pageRequest, GameCriteria gameCriteria);
+
+    boolean isDeveloperOfGame(Long developerId, Long gameId);
 }
