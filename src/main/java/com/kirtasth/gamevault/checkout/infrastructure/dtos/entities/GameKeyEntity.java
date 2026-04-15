@@ -33,8 +33,14 @@ public class GameKeyEntity {
     @Column(name = "used_at")
     private Instant usedAt;
 
-    @Column(name = "order_item_id")
-    private Long orderItemId; // Made nullable for stock keys
+    @Column(name = "reserved_by_user_id")
+    private Long reservedByUserId;
+
+    @Column(name = "reserved_deadline")
+    private Instant reservedDeadline;
+
+    @Column(name = "purchased_by_user_id")
+    private Long purchasedByUserId;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

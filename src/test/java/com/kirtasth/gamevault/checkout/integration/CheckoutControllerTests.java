@@ -2,7 +2,8 @@ package com.kirtasth.gamevault.checkout.integration;
 
 import com.kirtasth.gamevault.cart.infrastructure.dtos.requests.AddItemPetitionRequest;
 import com.kirtasth.gamevault.catalog.infrastructure.dtos.requests.NewDeveloperRequest;
-import com.kirtasth.gamevault.checkout.domain.ports.out.StripePort;
+import com.kirtasth.gamevault.checkout.domain.ports.out.StripeSessionPort;
+import com.kirtasth.gamevault.checkout.infrastructure.dtos.requests.UploadGameKeysRequest;
 import com.kirtasth.gamevault.common.BaseIntegrationTest;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.CredentialsRequest;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.NewUserRequest;
@@ -13,6 +14,8 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -22,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CheckoutControllerTests extends BaseIntegrationTest {
 
     @MockitoBean
-    private StripePort stripePort;
+    private StripeSessionPort stripeSessionPort;
 
     private String userToken;
     private Long gameId;
@@ -32,6 +35,7 @@ public class CheckoutControllerTests extends BaseIntegrationTest {
         String devToken = registerAndLogin("dev", "dev@checkout.com");
         registerDeveloper(devToken, "Dev", "Desc");
         gameId = createGame(devToken, "Test Game for Checkout");
+        uploadKeys(devToken, gameId, List.of("KEY-1", "KEY-2", "KEY-3"));
 
         userToken = registerAndLogin("user", "user@checkout.com");
     }
@@ -86,6 +90,17 @@ public class CheckoutControllerTests extends BaseIntegrationTest {
         return objectMapper.readTree(result.getResponse().getContentAsString()).get("content").get(0).get("id").asLong();
     }
 
+    private void uploadKeys(String token, Long gameId, List<String> keys) throws Exception {
+        UploadGameKeysRequest request = new UploadGameKeysRequest();
+        request.setKeys(keys);
+
+        mockMvc.perform(post("/api/v1/checkout/games/" + gameId + "/keys")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+    }
+
     @Test
     void shouldCreateCheckoutSession() throws Exception {
         // Get cart to get its ID
@@ -104,8 +119,8 @@ public class CheckoutControllerTests extends BaseIntegrationTest {
                         .content(objectMapper.writeValueAsString(addItemRequest)))
                 .andExpect(status().isOk());
 
-        // Mock StripePort
-        when(stripePort.createCheckoutSession(any(), any())).thenReturn("https://checkout.stripe.com/test");
+        // Mock StripeSessionPort
+        when(stripeSessionPort.createCheckoutSession(any(), any())).thenReturn("https://checkout.stripe.com/test");
 
         // Test POST /api/v1/checkout
         mockMvc.perform(post("/api/v1/checkout")

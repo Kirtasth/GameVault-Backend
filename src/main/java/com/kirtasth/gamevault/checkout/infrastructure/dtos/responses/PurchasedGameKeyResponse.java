@@ -7,11 +7,10 @@ import java.time.Instant;
 
 @Data
 @Builder
-public class GameKeyResponse {
-    private Long id;
+public class PurchasedGameKeyResponse {
     private Long gameId;
+    private String gameTitle;
+    private String imageUrl;
     private String keyValue;
-    private Boolean isUsed;
-    private Long purchasedByUserId;
-    private Instant createdAt;
+    private Instant purchasedAt;
 }

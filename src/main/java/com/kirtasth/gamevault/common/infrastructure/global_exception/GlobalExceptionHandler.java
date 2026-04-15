@@ -129,6 +129,20 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorRes, httpCode);
     }
 
+    @ExceptionHandler(BadGatewayException.class)
+    public ResponseEntity<ErrorResponse> handleBadGatewayException(BadGatewayException ex) {
+        var httpCode = HttpStatus.BAD_GATEWAY;
+
+        var errorRes = new ErrorResponse(
+                httpCode.value(),
+                "Bad Gateway",
+                ex.getMessage());
+        log.error("Bad Gateway controlled error: {} With cause: {}.",
+                ex.getMessage(), ex.getCause() == null ? null : ex.getCause().getClass().getSimpleName(),
+                ex);
+        return new ResponseEntity<>(errorRes, httpCode);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception ex) {
         var httpCode = HttpStatus.INTERNAL_SERVER_ERROR;

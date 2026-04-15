@@ -13,5 +13,6 @@ public class OrderItem {
     private Long id;
     private Long orderId;
     private Long gameId;
+    private Long gameKeyId;
     private Double purchasedPrice;
 }

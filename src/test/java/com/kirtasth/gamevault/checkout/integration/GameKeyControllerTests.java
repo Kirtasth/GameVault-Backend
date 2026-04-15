@@ -146,6 +146,14 @@ public class GameKeyControllerTests extends BaseIntegrationTest {
     }
 
     @Test
+    void shouldGetMyPurchasedKeys() throws Exception {
+        mockMvc.perform(get("/api/v1/checkout/my-keys")
+                        .header("Authorization", "Bearer " + devToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
     void shouldForbiddenWhenUploadingToOtherDevGame() throws Exception {
         UploadGameKeysRequest request = new UploadGameKeysRequest();
         request.setKeys(List.of("STOLEN-KEY"));

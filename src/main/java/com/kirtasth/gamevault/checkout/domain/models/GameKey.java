@@ -16,7 +16,9 @@ public class GameKey {
     private Long gameId;
     private String keyValue;
     private Boolean isUsed;
-    private Long orderItemId;
+    private Long reservedByUserId;
+    private Instant reservedDeadline;
+    private Long purchasedByUserId;
     private Instant usedAt;
     private Instant createdAt;
     private Instant updatedAt;

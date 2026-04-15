@@ -137,16 +137,6 @@ public class CatalogControllerTests extends BaseIntegrationTest {
     }
 
     @Test
-    @Order(6)
-    void shouldListPurchasedGames() throws Exception {
-        mockMvc.perform(get("/api/v1/catalog/purchased-games")
-                        .header("Authorization", "Bearer " + accessToken)
-                        .param("page", "0")
-                        .param("size", "10"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
     @Order(7)
     void shouldListCustomGames() throws Exception {
         CustomGameListRequest customGameListRequest = new CustomGameListRequest(List.of(1L, 2L));

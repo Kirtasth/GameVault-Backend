@@ -60,6 +60,10 @@ public class GameRepoAdapter implements GameRepoPort {
                 this.gameEntitySpecification.containsAllGameTags(gameCriteria.gameTags())
         );
 
+        if (gameCriteria.onlyAvailable()) {
+            spec = spec.and(this.gameEntitySpecification.hasAvailableKeys(java.time.Instant.now()));
+        }
+
         var page = this.gameRepository.findAll(spec, pageable).map(mapper::toGame);
         return this.pageMapper.toDomain(page);
     }

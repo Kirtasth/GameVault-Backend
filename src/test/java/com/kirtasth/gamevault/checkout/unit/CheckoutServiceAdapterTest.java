@@ -1,5 +1,8 @@
 package com.kirtasth.gamevault.checkout.unit;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kirtasth.gamevault.cart.application.exceptions.EmptyCartException;
 import com.kirtasth.gamevault.cart.domain.models.CartItem;
 import com.kirtasth.gamevault.cart.domain.models.ShoppingCart;
@@ -7,23 +10,20 @@ import com.kirtasth.gamevault.cart.domain.ports.in.CartServicePort;
 import com.kirtasth.gamevault.catalog.domain.models.Game;
 import com.kirtasth.gamevault.checkout.application.CheckoutServiceAdapter;
 import com.kirtasth.gamevault.checkout.domain.models.GameKey;
-import com.kirtasth.gamevault.checkout.domain.models.Order;
-import com.kirtasth.gamevault.checkout.domain.models.OrderItem;
 import com.kirtasth.gamevault.checkout.domain.ports.out.CatalogPort;
 import com.kirtasth.gamevault.checkout.domain.ports.out.GameKeyRepository;
-import com.kirtasth.gamevault.checkout.domain.ports.out.OrderRepository;
 import com.kirtasth.gamevault.checkout.domain.ports.out.StripePort;
-import com.stripe.model.Event;
-import com.stripe.model.EventDataObjectDeserializer;
-import com.stripe.model.checkout.Session;
+import com.kirtasth.gamevault.checkout.domain.ports.out.StripeSessionPort;
+import com.kirtasth.gamevault.checkout.infrastructure.adapters.StripeAdapterFactory;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -40,16 +40,31 @@ class CheckoutServiceAdapterTest {
     private CatalogPort catalogPort;
 
     @Mock
-    private StripePort stripePort;
+    private StripeSessionPort stripeSessionPort;
 
     @Mock
-    private OrderRepository orderRepository;
+    private StripeAdapterFactory stripeAdapterFactory;
 
     @Mock
     private GameKeyRepository gameKeyRepository;
 
-    @InjectMocks
+    @Mock
+    private ObjectMapper objectMapper;
+
     private CheckoutServiceAdapter checkoutServiceAdapter;
+
+    @BeforeEach
+    void setUp() {
+        checkoutServiceAdapter = new CheckoutServiceAdapter(
+                cartServicePort,
+                catalogPort,
+                stripeSessionPort,
+                stripeAdapterFactory,
+                gameKeyRepository,
+                objectMapper,
+                30L
+        );
+    }
 
     @Test
     void createCheckoutSession_ShouldReturnUrl_WhenCartIsNotEmpty() {
@@ -61,14 +76,17 @@ class CheckoutServiceAdapterTest {
                 .items(List.of(item))
                 .build();
         Game game = Game.builder().id(10L).title("Test Game").price(19.99).build();
+        GameKey key = GameKey.builder().id(1L).gameId(10L).keyValue("KEY-1").build();
 
         when(cartServicePort.getCart(userId)).thenReturn(cart);
         when(catalogPort.findGamesByIds(List.of(10L))).thenReturn(List.of(game));
-        when(stripePort.createCheckoutSession(eq(cart), any())).thenReturn("https://stripe.com/session");
+        when(gameKeyRepository.findAvailableKeysByGameId(eq(10L), eq(1))).thenReturn(List.of(key));
+        when(stripeSessionPort.createCheckoutSession(eq(cart), any())).thenReturn("https://stripe.com/session");
 
         String url = checkoutServiceAdapter.createCheckoutSession(userId);
 
         assertEquals("https://stripe.com/session", url);
+        verify(gameKeyRepository).saveAll(anyList());
     }
 
     @Test
@@ -86,194 +104,47 @@ class CheckoutServiceAdapterTest {
     }
 
     @Test
-    void handleStripeWebhook_ShouldIgnore_WhenEventIsNotCheckoutSessionCompleted() {
-        String payload = "payload";
+    void handleStripeEvent_ShouldCallAdapter_WhenAdapterExists() throws JsonProcessingException {
+        // Arrange
+        String payload = "{\"type\": \"checkout.session.completed\"}";
         String sigHeader = "sig";
-        Event event = mock(Event.class);
+        String eventType = "checkout.session.completed";
 
-        when(stripePort.verifyWebhookSignature(payload, sigHeader)).thenReturn(event);
-        when(event.getType()).thenReturn("payment_intent.succeeded");
+        JsonNode rootNode = mock(JsonNode.class);
+        JsonNode typeNode = mock(JsonNode.class);
+        when(objectMapper.readTree(payload)).thenReturn(rootNode);
+        when(rootNode.get("type")).thenReturn(typeNode);
+        when(typeNode.asText()).thenReturn(eventType);
 
-        checkoutServiceAdapter.handleStripeWebhook(payload, sigHeader);
+        StripePort adapter = mock(StripePort.class);
+        when(stripeAdapterFactory.getAdapter(eventType)).thenReturn(Optional.of(adapter));
 
-        verify(cartServicePort, never()).getCart(any());
+        // Act
+        checkoutServiceAdapter.handleStripeEvent(payload, sigHeader);
+
+        // Assert
+        verify(adapter).handleEvent(payload, sigHeader);
     }
 
     @Test
-    void handleStripeWebhook_ShouldLogAndReturn_WhenUserIdMissingInMetadata() {
+    void handleStripeEvent_ShouldNotThrow_WhenAdapterDoesNotExist() throws JsonProcessingException {
         // Arrange
-        String payload = "payload";
+        String payload = "{\"type\": \"unknown.event\"}";
         String sigHeader = "sig";
-        Event event = mock(Event.class);
-        EventDataObjectDeserializer deserializer = mock(EventDataObjectDeserializer.class);
-        Session session = mock(Session.class);
+        String eventType = "unknown.event";
 
-        when(stripePort.verifyWebhookSignature(payload, sigHeader)).thenReturn(event);
-        when(event.getType()).thenReturn("checkout.session.completed");
-        when(event.getDataObjectDeserializer()).thenReturn(deserializer);
-        when(deserializer.getObject()).thenReturn(Optional.of(session));
-        when(session.getMetadata()).thenReturn(Collections.emptyMap());
+        JsonNode rootNode = mock(JsonNode.class);
+        JsonNode typeNode = mock(JsonNode.class);
+        when(objectMapper.readTree(payload)).thenReturn(rootNode);
+        when(rootNode.get("type")).thenReturn(typeNode);
+        when(typeNode.asText()).thenReturn(eventType);
+
+        when(stripeAdapterFactory.getAdapter(eventType)).thenReturn(Optional.empty());
 
         // Act
-        checkoutServiceAdapter.handleStripeWebhook(payload, sigHeader);
+        checkoutServiceAdapter.handleStripeEvent(payload, sigHeader);
 
         // Assert
-        verify(cartServicePort, never()).getCart(any());
-        verify(orderRepository, never()).save(any());
-    }
-
-    @Test
-    void handleStripeWebhook_ShouldLogAndReturn_WhenCartIsEmpty() {
-        // Arrange
-        String payload = "payload";
-        String sigHeader = "sig";
-        Event event = mock(Event.class);
-        EventDataObjectDeserializer deserializer = mock(EventDataObjectDeserializer.class);
-        Session session = mock(Session.class);
-
-        when(stripePort.verifyWebhookSignature(payload, sigHeader)).thenReturn(event);
-        when(event.getType()).thenReturn("checkout.session.completed");
-        when(event.getDataObjectDeserializer()).thenReturn(deserializer);
-        when(deserializer.getObject()).thenReturn(Optional.of(session));
-        when(session.getMetadata()).thenReturn(Map.of("user_id", "1"));
-
-        Long userId = 1L;
-        ShoppingCart emptyCart = ShoppingCart.builder().userId(userId).items(Collections.emptyList()).build();
-        when(cartServicePort.getCart(userId)).thenReturn(emptyCart);
-
-        // Act
-        checkoutServiceAdapter.handleStripeWebhook(payload, sigHeader);
-
-        // Assert
-        verify(catalogPort, never()).findGamesByIds(any());
-        verify(orderRepository, never()).save(any());
-    }
-
-    @Test
-    void handleStripeWebhook_ShouldSkipItem_WhenGameNotFoundInCatalog() {
-        // Arrange
-        String payload = "payload";
-        String sigHeader = "sig";
-        Event event = mock(Event.class);
-        EventDataObjectDeserializer deserializer = mock(EventDataObjectDeserializer.class);
-        Session session = mock(Session.class);
-
-        when(stripePort.verifyWebhookSignature(payload, sigHeader)).thenReturn(event);
-        when(event.getType()).thenReturn("checkout.session.completed");
-        when(event.getDataObjectDeserializer()).thenReturn(deserializer);
-        when(deserializer.getObject()).thenReturn(Optional.of(session));
-        when(session.getMetadata()).thenReturn(Map.of("user_id", "1"));
-        when(session.getId()).thenReturn("cs_test_123");
-
-        Long userId = 1L;
-        CartItem item = CartItem.builder().gameId(10L).quantity(1).build();
-        ShoppingCart cart = ShoppingCart.builder().userId(userId).items(List.of(item)).build();
-        when(cartServicePort.getCart(userId)).thenReturn(cart);
-
-        // Game 10 is NOT returned by catalogPort
-        when(catalogPort.findGamesByIds(anyList())).thenReturn(Collections.emptyList());
-
-        Order mockOrder = Order.builder()
-                .id(100L)
-                .items(new ArrayList<>())
-                .build();
-        when(orderRepository.save(any(Order.class))).thenReturn(mockOrder);
-
-        // Act
-        checkoutServiceAdapter.handleStripeWebhook(payload, sigHeader);
-
-        // Assert
-        verify(orderRepository).save(argThat(order -> order.getItems().isEmpty()));
-        verify(gameKeyRepository, never()).findRandomUnusedKeyByGameId(anyLong());
-        verify(cartServicePort).clearCart(userId);
-    }
-
-    @Test
-    void handleStripeWebhook_ShouldLogErrorButContinue_WhenNoGameKeyAvailable() {
-        // Arrange
-        String payload = "payload";
-        String sigHeader = "sig";
-        Event event = mock(Event.class);
-        EventDataObjectDeserializer deserializer = mock(EventDataObjectDeserializer.class);
-        Session session = mock(Session.class);
-
-        when(stripePort.verifyWebhookSignature(payload, sigHeader)).thenReturn(event);
-        when(event.getType()).thenReturn("checkout.session.completed");
-        when(event.getDataObjectDeserializer()).thenReturn(deserializer);
-        when(deserializer.getObject()).thenReturn(Optional.of(session));
-        when(session.getMetadata()).thenReturn(Map.of("user_id", "1"));
-        when(session.getId()).thenReturn("cs_test_123");
-
-        Long userId = 1L;
-        CartItem item = CartItem.builder().gameId(10L).quantity(1).build();
-        ShoppingCart cart = ShoppingCart.builder().userId(userId).items(List.of(item)).build();
-        when(cartServicePort.getCart(userId)).thenReturn(cart);
-
-        Game game = Game.builder().id(10L).price(10.0).build();
-        when(catalogPort.findGamesByIds(anyList())).thenReturn(List.of(game));
-
-        Order mockOrder = Order.builder()
-                .id(100L)
-                .items(new ArrayList<>(List.of(OrderItem.builder().id(200L).gameId(10L).build())))
-                .build();
-        when(orderRepository.save(any(Order.class))).thenReturn(mockOrder);
-
-        // No key available
-        when(gameKeyRepository.findRandomUnusedKeyByGameId(10L)).thenReturn(Optional.empty());
-
-        // Act
-        checkoutServiceAdapter.handleStripeWebhook(payload, sigHeader);
-
-        // Assert
-        verify(gameKeyRepository, never()).save(any());
-        verify(cartServicePort).clearCart(userId);
-    }
-
-    @Test
-    void handleStripeWebhook_ShouldHandleComplexCartWithMultipleItemsAndQuantities() {
-        // Arrange
-        String payload = "payload";
-        String sigHeader = "sig";
-        Event event = mock(Event.class);
-        EventDataObjectDeserializer deserializer = mock(EventDataObjectDeserializer.class);
-        Session session = mock(Session.class);
-
-        when(stripePort.verifyWebhookSignature(payload, sigHeader)).thenReturn(event);
-        when(event.getType()).thenReturn("checkout.session.completed");
-        when(event.getDataObjectDeserializer()).thenReturn(deserializer);
-        when(deserializer.getObject()).thenReturn(Optional.of(session));
-        when(session.getMetadata()).thenReturn(Map.of("user_id", "1"));
-        when(session.getId()).thenReturn("cs_test_123");
-
-        Long userId = 1L;
-        CartItem item1 = CartItem.builder().gameId(10L).quantity(2).build();
-        CartItem item2 = CartItem.builder().gameId(20L).quantity(1).build();
-        ShoppingCart cart = ShoppingCart.builder().userId(userId).items(List.of(item1, item2)).build();
-        when(cartServicePort.getCart(userId)).thenReturn(cart);
-
-        Game game1 = Game.builder().id(10L).price(10.0).build();
-        Game game2 = Game.builder().id(20L).price(20.0).build();
-        when(catalogPort.findGamesByIds(anyList())).thenReturn(List.of(game1, game2));
-
-        OrderItem orderItem1 = OrderItem.builder().id(201L).gameId(10L).build();
-        OrderItem orderItem2 = OrderItem.builder().id(202L).gameId(10L).build();
-        OrderItem orderItem3 = OrderItem.builder().id(203L).gameId(20L).build();
-        Order mockOrder = Order.builder()
-                .id(100L)
-                .items(new ArrayList<>(List.of(orderItem1, orderItem2, orderItem3)))
-                .build();
-        when(orderRepository.save(any(Order.class))).thenReturn(mockOrder);
-
-        when(gameKeyRepository.findRandomUnusedKeyByGameId(10L)).thenReturn(Optional.of(new GameKey()));
-        when(gameKeyRepository.findRandomUnusedKeyByGameId(20L)).thenReturn(Optional.of(new GameKey()));
-
-        // Act
-        checkoutServiceAdapter.handleStripeWebhook(payload, sigHeader);
-
-        // Assert
-        verify(orderRepository).save(argThat(order -> order.getItems().size() == 3));
-        verify(gameKeyRepository, Mockito.times(3)).findRandomUnusedKeyByGameId(anyLong());
-        verify(gameKeyRepository, Mockito.times(3)).save(any());
-        verify(cartServicePort).clearCart(userId);
+        verifyNoInteractions(stripeSessionPort);
     }
 }

@@ -3,7 +3,6 @@ package com.kirtasth.gamevault.catalog.application;
 import com.kirtasth.gamevault.catalog.domain.models.*;
 import com.kirtasth.gamevault.catalog.domain.ports.in.GameServicePort;
 import com.kirtasth.gamevault.catalog.domain.ports.out.GameRepoPort;
-import com.kirtasth.gamevault.catalog.domain.ports.out.PurchasedGamesPort;
 import com.kirtasth.gamevault.catalog.domain.ports.out.UserValidationPort;
 import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
 import com.kirtasth.gamevault.common.domain.models.page.Page;
@@ -21,7 +20,6 @@ public class GameServiceAdapter implements GameServicePort {
     private final GameRepoPort gameRepo;
     private final UserValidationPort userValidation;
     private final ImageStoragePort imageStorage;
-    private final PurchasedGamesPort purchasedGamesPort;
 
     @Override
     public Game create(NewGame newGame) {
@@ -78,15 +76,6 @@ public class GameServiceAdapter implements GameServicePort {
     @Override
     public Page<Game> listCustomGames(List<Long> gameIds, PageRequest pageRequest) {
         return gameRepo.findAllByIds(gameIds, pageRequest);
-    }
-
-    @Override
-    public Page<Game> listPurchasedGames(Long userId, PageRequest pageRequest, GameCriteria gameCriteria) {
-        List<Long> purchasedGameIds = purchasedGamesPort.getPurchasedGameIds(userId);
-        if (purchasedGameIds.isEmpty()) {
-            return Page.empty(pageRequest.page(), pageRequest.size());
-        }
-        return gameRepo.findAllByIds(purchasedGameIds, pageRequest, gameCriteria);
     }
 
     @Override

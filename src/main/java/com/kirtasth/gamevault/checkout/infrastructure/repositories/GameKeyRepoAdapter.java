@@ -8,6 +8,7 @@ import com.kirtasth.gamevault.checkout.infrastructure.repositories.jpa.GameKeyJp
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -53,18 +54,38 @@ public class GameKeyRepoAdapter implements GameKeyRepository {
 
     @Override
     public long countAvailableKeysByGameId(Long gameId) {
-        return gameKeyJpaRepository.countByGameIdAndUsedAtIsNull(gameId);
+        return gameKeyJpaRepository.countAvailableByGameId(gameId, Instant.now());
     }
 
     @Override
     public Optional<GameKey> findRandomUnusedKeyByGameId(Long gameId) {
-        return gameKeyJpaRepository.findRandomUnusedKeyByGameId(gameId)
+        return gameKeyJpaRepository.findRandomUnusedKeyByGameId(gameId, Instant.now())
                 .map(gameKeyMapper::toDomain);
     }
 
     @Override
-    public Optional<GameKey> findByOrderItemId(Long orderItemId) {
-        return gameKeyJpaRepository.findByOrderItemId(orderItemId)
-                .map(gameKeyMapper::toDomain);
+    public List<GameKey> findAvailableKeysByGameId(Long gameId, int limit) {
+        return gameKeyJpaRepository.findAvailableKeysByGameId(gameId, limit, Instant.now()).stream()
+                .map(gameKeyMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<GameKey> findReservedKeysByUserId(Long userId) {
+        return gameKeyJpaRepository.findByReservedByUserId(userId).stream()
+                .map(gameKeyMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<GameKey> findPurchasedKeysByUserId(Long userId) {
+        return gameKeyJpaRepository.findByPurchasedByUserId(userId).stream()
+                .map(gameKeyMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void releaseExpiredReservations(Instant now) {
+        gameKeyJpaRepository.releaseExpiredReservations(now);
     }
 }

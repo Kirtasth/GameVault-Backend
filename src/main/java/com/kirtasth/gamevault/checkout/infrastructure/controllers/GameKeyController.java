@@ -3,6 +3,7 @@ package com.kirtasth.gamevault.checkout.infrastructure.controllers;
 import com.kirtasth.gamevault.checkout.domain.ports.in.ManageGameKeysUseCase;
 import com.kirtasth.gamevault.checkout.infrastructure.dtos.requests.UploadGameKeysRequest;
 import com.kirtasth.gamevault.checkout.infrastructure.dtos.responses.GameKeyResponse;
+import com.kirtasth.gamevault.checkout.infrastructure.dtos.responses.PurchasedGameKeyResponse;
 import com.kirtasth.gamevault.checkout.infrastructure.mappers.GameKeyMapper;
 import com.kirtasth.gamevault.users.domain.models.AuthUser;
 import jakarta.validation.Valid;
@@ -54,5 +55,11 @@ public class GameKeyController {
         Long developerId = ((AuthUser) authentication.getPrincipal()).getId();
         manageGameKeysUseCase.markKeyAsUsed(developerId, keyId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/my-keys")
+    public ResponseEntity<List<PurchasedGameKeyResponse>> getPurchasedKeys(Authentication authentication) {
+        Long userId = ((AuthUser) authentication.getPrincipal()).getId();
+        return ResponseEntity.ok(manageGameKeysUseCase.getPurchasedKeys(userId));
     }
 }

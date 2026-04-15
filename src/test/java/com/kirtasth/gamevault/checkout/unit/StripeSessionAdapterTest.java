@@ -3,7 +3,7 @@ package com.kirtasth.gamevault.checkout.unit;
 import com.kirtasth.gamevault.cart.domain.models.CartItem;
 import com.kirtasth.gamevault.cart.domain.models.ShoppingCart;
 import com.kirtasth.gamevault.catalog.domain.models.Game;
-import com.kirtasth.gamevault.checkout.infrastructure.adapters.StripeAdapter;
+import com.kirtasth.gamevault.checkout.infrastructure.adapters.StripeSessionAdapter;
 import com.stripe.StripeClient;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
@@ -25,25 +25,25 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class StripeAdapterTest {
+class StripeSessionAdapterTest {
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private StripeClient stripeClient;
 
-    private StripeAdapter stripeAdapter;
+    private StripeSessionAdapter stripeSessionAdapter;
 
     @BeforeEach
     void setUp() {
-        stripeAdapter = new StripeAdapter(
+        stripeSessionAdapter = new StripeSessionAdapter(
                 stripeClient,
-                "whsec_test_secret",
                 "http://success.url",
-                "http://cancel.url"
+                "http://cancel.url",
+                30L
         );
     }
 
     @Test
-    void createCheckoutSession_ShouldConsolidateItemsIntoOneLineItem() throws StripeException {
+    void createCheckoutSession_ShouldAddIndividualLineItems() throws StripeException {
         // Arrange
         Game game1 = Game.builder()
                 .id(1L)
@@ -70,35 +70,40 @@ class StripeAdapterTest {
 
         Session session = mock(Session.class);
         when(session.getUrl()).thenReturn("http://stripe.url");
-        when(stripeClient.checkout().sessions().create(any(SessionCreateParams.class))).thenReturn(session);
+        when(stripeClient.v1().checkout().sessions().create(any(SessionCreateParams.class))).thenReturn(session);
 
         // Act
-        String url = stripeAdapter.createCheckoutSession(cart, games);
+        String url = stripeSessionAdapter.createCheckoutSession(cart, games);
 
         // Assert
         assertEquals("http://stripe.url", url);
         
-        verify(stripeClient.checkout().sessions()).create(argThat((SessionCreateParams params) -> {
+        verify(stripeClient.v1().checkout().sessions()).create(argThat((SessionCreateParams params) -> {
             List<SessionCreateParams.LineItem> lineItems = params.getLineItems();
-            if (lineItems == null || lineItems.size() != 1) return false;
+            if (lineItems == null || lineItems.size() != 2) return false;
             
-            SessionCreateParams.LineItem item = lineItems.get(0);
-            if (item.getQuantity() != 1L) return false;
+            // Check submit type and payment method
+            if (!SessionCreateParams.SubmitType.PAY.equals(params.getSubmitType())) return false;
+            if (!params.getPaymentMethodTypes().contains(SessionCreateParams.PaymentMethodType.CARD)) return false;
+
+            // Check first item
+            SessionCreateParams.LineItem stripeItem1 = lineItems.get(0);
+            if (stripeItem1.getQuantity() != 1L) return false;
+            if (stripeItem1.getPriceData().getUnitAmountDecimal().compareTo(new BigDecimal("1000")) != 0) return false;
+            if (!"Game 1".equals(stripeItem1.getPriceData().getProductData().getName())) return false;
+
+            // Check second item
+            SessionCreateParams.LineItem stripeItem2 = lineItems.get(1);
+            if (stripeItem2.getQuantity() != 2L) return false;
+            if (stripeItem2.getPriceData().getUnitAmountDecimal().compareTo(new BigDecimal("2000")) != 0) return false;
+            if (!"Game 2".equals(stripeItem2.getPriceData().getProductData().getName())) return false;
             
-            SessionCreateParams.LineItem.PriceData priceData = item.getPriceData();
-            BigDecimal amount = priceData.getUnitAmountDecimal();
-            if (amount.compareTo(new BigDecimal("5000")) != 0) return false;
-            
-            SessionCreateParams.LineItem.PriceData.ProductData productData = priceData.getProductData();
-            if (!"GameVault Order".equals(productData.getName())) return false;
-            
-            String description = productData.getDescription();
-            return description.contains("Game 1 (x1)") && description.contains("Game 2 (x2)");
+            return true;
         }));
     }
 
     @Test
-    void createCheckoutSession_ShouldIncludeImagesInConsolidatedView() throws StripeException {
+    void createCheckoutSession_ShouldNotIncludeImages() throws StripeException {
         // Arrange
         Game game1 = Game.builder()
                 .id(1L)
@@ -120,29 +125,17 @@ class StripeAdapterTest {
 
         Session session = mock(Session.class);
         when(session.getUrl()).thenReturn("http://stripe.url");
-        when(stripeClient.checkout().sessions().create(any(SessionCreateParams.class))).thenReturn(session);
+        when(stripeClient.v1().checkout().sessions().create(any(SessionCreateParams.class))).thenReturn(session);
 
         // Act
-        stripeAdapter.createCheckoutSession(cart, games);
+        stripeSessionAdapter.createCheckoutSession(cart, games);
 
         // Assert
         verify(stripeClient.v1().checkout().sessions()).create(argThat((SessionCreateParams params) -> {
             SessionCreateParams.LineItem.PriceData.ProductData productData = 
                 params.getLineItems().get(0).getPriceData().getProductData();
             List<String> images = productData.getImages();
-            return images != null && images.size() == 1 && images.get(0).equals("https://api.url/img1.png");
+            return images == null || images.isEmpty();
         }));
-    }
-
-    @Test
-    void verifyWebhookSignature_ShouldThrowException_WhenHeaderIsNull() {
-        // Act & Assert
-        try {
-            stripeAdapter.verifyWebhookSignature("{}", null);
-        } catch (NullPointerException e) {
-            // Webhook.constructEvent throws NPE when sigHeader is null
-        } catch (Exception e) {
-            // Catch other potential exceptions
-        }
     }
 }

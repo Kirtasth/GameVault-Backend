@@ -29,6 +29,10 @@ public class OrderItemEntity {
     @JoinColumn(name = "game_id", nullable = false)
     private GameEntity game;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "game_key_id")
+    private GameKeyEntity gameKey;
+
     @Column(name = "purchased_price", nullable = false)
     @JdbcTypeCode(SqlTypes.NUMERIC)
     private Double purchasedPrice;

@@ -1,11 +1,7 @@
 package com.kirtasth.gamevault.catalog.unit;
 
 import com.kirtasth.gamevault.catalog.application.GameServiceAdapter;
-import com.kirtasth.gamevault.catalog.domain.models.Developer;
-import com.kirtasth.gamevault.catalog.domain.models.Game;
-import com.kirtasth.gamevault.catalog.domain.models.GameCriteria;
-import com.kirtasth.gamevault.catalog.domain.models.NewDeveloper;
-import com.kirtasth.gamevault.catalog.domain.models.NewGame;
+import com.kirtasth.gamevault.catalog.domain.models.*;
 import com.kirtasth.gamevault.catalog.domain.ports.out.GameRepoPort;
 import com.kirtasth.gamevault.catalog.domain.ports.out.UserValidationPort;
 import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
@@ -23,9 +19,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
