@@ -93,6 +93,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/wishlist/{gameId}").access(
                                 permissionChecker.isAuthenticated())
                         .requestMatchers(HttpMethod.POST, "/api/v1/checkout/webhook").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/checkout/games/{gameId}/keys").access(
+                                permissionChecker.hasRole(RoleEnum.DEVELOPER))
+                        .requestMatchers(HttpMethod.GET, "/api/v1/checkout/games/{gameId}/keys").access(
+                                permissionChecker.hasRole(RoleEnum.DEVELOPER))
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/checkout/game-keys/{keyId}/mark-as-used").access(
+                                permissionChecker.hasRole(RoleEnum.DEVELOPER))
+                        .requestMatchers(HttpMethod.GET, "/api/v1/checkout/my-keys").access(
+                                permissionChecker.isAuthenticated())
                         .requestMatchers(HttpMethod.POST, "/api/v1/checkout").access(
                                 permissionChecker.isAuthenticated())
 

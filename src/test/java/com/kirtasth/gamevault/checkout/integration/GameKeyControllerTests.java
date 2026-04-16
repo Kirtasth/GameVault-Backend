@@ -90,7 +90,8 @@ public class GameKeyControllerTests extends BaseIntegrationTest {
                 .andExpect(status().isCreated());
 
         MvcResult result = mockMvc.perform(get("/api/v1/catalog")
-                        .param("title", title))
+                        .param("title", title)
+                        .param("onlyAvailable", "false"))
                 .andExpect(status().isOk())
                 .andReturn();
 

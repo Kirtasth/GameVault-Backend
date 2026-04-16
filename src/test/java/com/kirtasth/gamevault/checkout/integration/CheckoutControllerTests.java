@@ -32,12 +32,12 @@ public class CheckoutControllerTests extends BaseIntegrationTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        String devToken = registerAndLogin("dev", "dev@checkout.com");
+        String devToken = registerAndLogin("checkoutDev", "dev@checkout.com");
         registerDeveloper(devToken, "Dev", "Desc");
         gameId = createGame(devToken, "Test Game for Checkout");
         uploadKeys(devToken, gameId, List.of("KEY-1", "KEY-2", "KEY-3"));
 
-        userToken = registerAndLogin("user", "user@checkout.com");
+        userToken = registerAndLogin("checkoutUser", "user@checkout.com");
     }
 
     private String registerAndLogin(String username, String email) throws Exception {
@@ -83,7 +83,9 @@ public class CheckoutControllerTests extends BaseIntegrationTest {
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isCreated());
 
-        MvcResult result = mockMvc.perform(get("/api/v1/catalog").param("title", title))
+        MvcResult result = mockMvc.perform(get("/api/v1/catalog")
+                        .param("title", title)
+                        .param("onlyAvailable", "false"))
                 .andExpect(status().isOk())
                 .andReturn();
 
