@@ -11,6 +11,6 @@ import java.util.Optional;
 public interface ShoppingCartRepository extends JpaRepository<ShoppingCartEntity, Long> {
 
 
-    @Query("SELECT c FROM ShoppingCartEntity c WHERE c.userId = :userId AND c.status = 'OPENED'")
+    @Query("SELECT c FROM ShoppingCartEntity c LEFT JOIN FETCH c.items WHERE c.userId = :userId AND c.status = 'OPENED'")
     Optional<ShoppingCartEntity> findFirstOpenedByUserId(Long userId);
 }

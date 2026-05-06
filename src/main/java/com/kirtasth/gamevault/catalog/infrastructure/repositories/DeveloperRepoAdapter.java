@@ -8,9 +8,11 @@ import com.kirtasth.gamevault.catalog.infrastructure.repositories.jpa.DeveloperR
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor
+@Transactional
 public class DeveloperRepoAdapter implements DeveloperRepoPort {
 
     private final DeveloperRepository developerRepository;

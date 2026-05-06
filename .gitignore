@@ -38,4 +38,13 @@ build/
 **/*.key
 
 ### GEMINI ###
+
 /.gemini/
+/.geminiignore
+docs
+/GEMINI.md
+
+### Graphify ###
+/graphify-out
+/src/main/java/com/kirtasth/graphify-out
+.graphifyignore

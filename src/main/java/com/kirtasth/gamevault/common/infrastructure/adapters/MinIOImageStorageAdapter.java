@@ -5,6 +5,7 @@ import com.kirtasth.gamevault.common.domain.ports.out.ImageStoragePort;
 import io.minio.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,12 +13,16 @@ import java.io.ByteArrayInputStream;
 
 @Component
 @RequiredArgsConstructor
+@Profile("pre")
 public class MinIOImageStorageAdapter implements ImageStoragePort {
 
     private final MinioClient client;
 
     @Value("${minio.bucket-name}")
     private String bucketName;
+
+    @Value("${gamevault.api.url}")
+    private String apiUrl;
 
     @Override
     public String uploadAvatar(MultipartFile image, Long userId) {
@@ -31,7 +36,7 @@ public class MinIOImageStorageAdapter implements ImageStoragePort {
                     .build()
             );
 
-            return "/images/users/" + userId + "/avatar";
+            return apiUrl + "/images/users/" + userId + "/avatar";
         } catch (Exception e) {
             throw new ImageUploadException(e.getMessage());
         }
@@ -49,7 +54,7 @@ public class MinIOImageStorageAdapter implements ImageStoragePort {
                     .build()
             );
 
-            return "/images/games/" + gameId + "/main";
+            return apiUrl + "/images/games/" + gameId + "/main";
         } catch (Exception e) {
             throw new ImageUploadException(e.getMessage());
         }

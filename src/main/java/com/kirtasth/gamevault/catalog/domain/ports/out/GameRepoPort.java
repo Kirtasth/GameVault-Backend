@@ -25,4 +25,6 @@ public interface GameRepoPort {
     Page<Game> findAllByDevId(Long developerId, PageRequest pageRequest, GameCriteria gameCriteria);
 
     Page<Game> findAllByIds(List<Long> gameIds, PageRequest pageRequest);
+
+    Page<Game> findAllByIds(List<Long> gameIds, PageRequest pageRequest, GameCriteria gameCriteria);
 }

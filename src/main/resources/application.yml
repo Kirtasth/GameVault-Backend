@@ -3,27 +3,45 @@ spring:
     import: optional:file:./.env[.properties]
   application:
     name: GameVault
-
-    security:
-      jwt:
-        expiration: 360_000
-        refresh-expiration: 8_640_000
-
+  security:
+    jwt:
+      expiration: 360_000
+      refresh-expiration: 8_640_000
   datasource:
     url: ${POSTGRES_URL}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
-
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     generate-ddl: false
     hibernate:
       ddl-auto: validate
-
   sql:
     init:
       mode: always
+
+stripe:
+  api:
+    key: ${STRIPE_API_KEY}
+  webhook:
+    secret: ${STRIPE_WEBHOOK_SECRET}
+  success:
+    url: ${STRIPE_SUCCESS_URL}
+  cancel:
+    url: ${STRIPE_CANCEL_URL}
+  checkout:
+    expiration-minutes: 30
+
+gamevault:
+  api:
+    url: ${GAMEVAULT_API_URL}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: pre
 
 minio:
   url:
@@ -31,3 +49,9 @@ minio:
   access-key: ${MINIO_ACCESS_KEY}
   secret-key: ${MINIO_SECRET_KEY}
   bucket-name: ${MINIO_BUCKET_NAME}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: pro

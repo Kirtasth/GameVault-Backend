@@ -1,5 +1,6 @@
 package com.kirtasth.gamevault.catalog.infrastructure.controllers;
 
+import com.kirtasth.gamevault.catalog.domain.models.GameCriteria;
 import com.kirtasth.gamevault.catalog.domain.ports.in.GameServicePort;
 import com.kirtasth.gamevault.catalog.domain.ports.out.UserValidationPort;
 import com.kirtasth.gamevault.catalog.infrastructure.dtos.requests.CustomGameListRequest;
@@ -12,7 +13,6 @@ import com.kirtasth.gamevault.users.domain.models.AuthUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -57,7 +57,21 @@ public class CatalogController {
             @ModelAttribute GameCriteriaRequest gameCriteriaRequest
     ) {
         var domainPageable = this.pageMapper.toDomain(pageable);
+        
         var gameCriteria = this.mapper.toGameCriteria(gameCriteriaRequest);
+        
+        if (gameCriteriaRequest.onlyAvailable() == null) {
+            gameCriteria = GameCriteria.builder()
+                    .title(gameCriteria.title())
+                    .minPrice(gameCriteria.minPrice())
+                    .maxPrice(gameCriteria.maxPrice())
+                    .developerName(gameCriteria.developerName())
+                    .gameTags(gameCriteria.gameTags())
+                    .fromReleaseTime(gameCriteria.fromReleaseTime())
+                    .toReleaseTime(gameCriteria.toReleaseTime())
+                    .onlyAvailable(true)
+                    .build();
+        }
 
         var result = this.gameService.listAll(domainPageable, gameCriteria);
 
@@ -96,15 +110,6 @@ public class CatalogController {
         var response = this.pageMapper.toSpring(result, pageable)
                 .map(this.mapper::toGameResponse);
         return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/purchased-games")
-    public ResponseEntity<?> listPurchasedGames(
-            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
-            @ModelAttribute GameCriteriaRequest gameCriteriaRequest,
-            Authentication authentication
-    ) {
-        return ResponseEntity.status(HttpStatus.OK).body(Page.empty(pageable));
     }
 
     @PostMapping("/custom-game-list")

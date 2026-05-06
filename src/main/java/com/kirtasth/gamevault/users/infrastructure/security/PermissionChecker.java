@@ -1,7 +1,10 @@
 package com.kirtasth.gamevault.users.infrastructure.security;
 
+import com.kirtasth.gamevault.cart.domain.ports.out.CartRepoPort;
+import com.kirtasth.gamevault.catalog.domain.ports.in.GameServicePort;
 import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
 import com.kirtasth.gamevault.users.domain.models.AuthUser;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
@@ -10,7 +13,11 @@ import org.springframework.stereotype.Component;
 import java.util.Objects;
 
 @Component("permission")
+@RequiredArgsConstructor
 public class PermissionChecker {
+
+    private final GameServicePort gameServicePort;
+    private final CartRepoPort cartRepoPort;
 
     public AuthorizationManager<RequestAuthorizationContext> hasRole(RoleEnum roleEnum) {
         return (auth, requestContext) -> {
@@ -80,6 +87,56 @@ public class PermissionChecker {
             boolean isAdmin = Objects.requireNonNull(isAdmin().authorize(auth, requestContext)).isGranted();
 
             return new AuthorizationDecision(isOwner || isAdmin);
+        };
+    }
+
+    public AuthorizationManager<RequestAuthorizationContext> isGameOwner(String pathVariable) {
+        return (auth, requestContext) -> {
+            var authentication = auth.get();
+
+            if (authentication == null || !authentication.isAuthenticated()
+                    || !(authentication.getPrincipal() instanceof AuthUser authUser)) {
+                return new AuthorizationDecision(false);
+            }
+
+            boolean isDeveloper = authUser.getRoles().stream()
+                    .map(role -> role.getRole().name())
+                    .anyMatch(RoleEnum.DEVELOPER.name()::equals);
+
+            if (!isDeveloper) {
+                return new AuthorizationDecision(false);
+            }
+
+            Long gameId = Long.valueOf(requestContext.getVariables().get(pathVariable));
+            Long developerId = authUser.getId();
+
+            boolean isOwner = gameServicePort.isDeveloperOfGame(developerId, gameId);
+
+            return new AuthorizationDecision(isOwner);
+        };
+    }
+
+    public AuthorizationManager<RequestAuthorizationContext> isCartItemOwner(String pathVariable) {
+        return (auth, requestContext) -> {
+            var authentication = auth.get();
+
+            if (authentication == null || !authentication.isAuthenticated()
+                    || !(authentication.getPrincipal() instanceof AuthUser authUser)) {
+                return new AuthorizationDecision(false);
+            }
+
+            Long itemId = Long.valueOf(requestContext.getVariables().get(pathVariable));
+            var cartItem = cartRepoPort.findById(itemId);
+
+            if (cartItem == null) {
+                return new AuthorizationDecision(false);
+            }
+
+            var cart = cartRepoPort.findOpenedByUserId(authUser.getId());
+
+            boolean isOwner = cart.isPresent() && cart.get().id().equals(cartItem.cartId());
+
+            return new AuthorizationDecision(isOwner);
         };
     }
 }

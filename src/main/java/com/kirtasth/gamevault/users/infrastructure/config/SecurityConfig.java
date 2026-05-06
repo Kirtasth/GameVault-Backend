@@ -1,7 +1,6 @@
 package com.kirtasth.gamevault.users.infrastructure.config;
 
 import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
-import com.kirtasth.gamevault.users.infrastructure.security.JwtAuthenticationFilter;
 import com.kirtasth.gamevault.users.infrastructure.security.PermissionChecker;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -84,7 +83,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/cart").access(
                                 permissionChecker.isAuthenticated())
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/cart/items/{itemId}").access(
-                                permissionChecker.isAuthenticated())
+                                permissionChecker.isCartItemOwner("itemId"))
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/cart").access(
                                 permissionChecker.isAuthenticated())
                         .requestMatchers(HttpMethod.GET, "/api/v1/wishlist").access(
@@ -92,6 +91,17 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/wishlist/{gameId}").access(
                                 permissionChecker.isAuthenticated())
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/wishlist/{gameId}").access(
+                                permissionChecker.isAuthenticated())
+                        .requestMatchers(HttpMethod.POST, "/api/v1/checkout/webhook").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/checkout/games/{gameId}/keys").access(
+                                permissionChecker.isGameOwner("gameId"))
+                        .requestMatchers(HttpMethod.GET, "/api/v1/checkout/games/{gameId}/keys").access(
+                                permissionChecker.isGameOwner("gameId"))
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/checkout/game-keys/{keyId}/mark-as-used").access(
+                                permissionChecker.hasRole(RoleEnum.DEVELOPER))
+                        .requestMatchers(HttpMethod.GET, "/api/v1/checkout/my-keys").access(
+                                permissionChecker.isAuthenticated())
+                        .requestMatchers(HttpMethod.POST, "/api/v1/checkout").access(
                                 permissionChecker.isAuthenticated())
 
 

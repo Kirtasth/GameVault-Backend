@@ -113,6 +113,19 @@ public class CartControllerTests extends BaseIntegrationTest {
                         .content(objectMapper.writeValueAsString(addRequest)))
                 .andExpect(status().isOk());
 
+        // 2.b Get cart again to find item ID
+        MvcResult cartResult2 = mockMvc.perform(get("/api/v1/cart")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andReturn();
+        JsonNode cartResponseJson2 = objectMapper.readTree(cartResult2.getResponse().getContentAsString());
+        Long itemId = cartResponseJson2.get("items").get(0).get("id").asLong();
+
+        // 2.c Remove single item
+        mockMvc.perform(delete("/api/v1/cart/items/" + itemId)
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk());
+
         // 3. Clear cart
         mockMvc.perform(delete("/api/v1/cart")
                         .header("Authorization", "Bearer " + accessToken))

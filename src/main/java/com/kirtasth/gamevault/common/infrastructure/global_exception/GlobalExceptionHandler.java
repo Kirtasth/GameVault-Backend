@@ -1,10 +1,8 @@
 package com.kirtasth.gamevault.common.infrastructure.global_exception;
 
 
-import com.kirtasth.gamevault.common.application.exception.InternalServerException;
-import com.kirtasth.gamevault.common.application.exception.ResourceConflictException;
-import com.kirtasth.gamevault.common.application.exception.ResourceNotFoundException;
-import com.kirtasth.gamevault.common.application.exception.UnauthorizedException;
+import com.kirtasth.gamevault.cart.application.exceptions.EmptyCartException;
+import com.kirtasth.gamevault.common.application.exception.*;
 import com.kirtasth.gamevault.common.infrastructure.dtos.responses.ErrorResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -74,6 +72,16 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorRes, httpCode);
     }
 
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleForbiddenException(ForbiddenException ex) {
+        var httpCode = HttpStatus.FORBIDDEN;
+        var errorRes = new ErrorResponse(
+                httpCode.value(),
+                "Forbidden",
+                ex.getMessage());
+        return new ResponseEntity<>(errorRes, httpCode);
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
         var httpCode = HttpStatus.NOT_FOUND;
@@ -97,6 +105,16 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorRes, httpCode);
     }
 
+    @ExceptionHandler(EmptyCartException.class)
+    public ResponseEntity<ErrorResponse> handleEmptyCartException(EmptyCartException ex) {
+        var httpCode = HttpStatus.BAD_REQUEST;
+        var errorRes = new ErrorResponse(
+                httpCode.value(),
+                "Bad Request",
+                ex.getMessage());
+        return new ResponseEntity<>(errorRes, httpCode);
+    }
+
     @ExceptionHandler(InternalServerException.class)
     public ResponseEntity<ErrorResponse> handleInternalServerException(InternalServerException ex) {
         var httpCode = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -106,6 +124,20 @@ public class GlobalExceptionHandler {
                 "Internal Server Error",
                 "Something went wrong in the server");
         log.error("Internal server controlled error: {} With cause: {}.",
+                ex.getMessage(), ex.getCause() == null ? null : ex.getCause().getClass().getSimpleName(),
+                ex);
+        return new ResponseEntity<>(errorRes, httpCode);
+    }
+
+    @ExceptionHandler(BadGatewayException.class)
+    public ResponseEntity<ErrorResponse> handleBadGatewayException(BadGatewayException ex) {
+        var httpCode = HttpStatus.BAD_GATEWAY;
+
+        var errorRes = new ErrorResponse(
+                httpCode.value(),
+                "Bad Gateway",
+                ex.getMessage());
+        log.error("Bad Gateway controlled error: {} With cause: {}.",
                 ex.getMessage(), ex.getCause() == null ? null : ex.getCause().getClass().getSimpleName(),
                 ex);
         return new ResponseEntity<>(errorRes, httpCode);
