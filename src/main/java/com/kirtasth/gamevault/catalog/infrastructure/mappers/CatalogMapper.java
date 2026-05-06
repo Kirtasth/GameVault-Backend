@@ -38,6 +38,15 @@ public interface CatalogMapper {
 
     GameResponse toGameResponse(Game game);
 
+    @Mapping(target = "gameId", source = "id.gameId")
+    @Mapping(target = "createdAt", source = "id.createdAt")
+    GameStatus toGameStatus(GameStatusEntity gameStatusEntity);
+
+    @Mapping(target = "id.gameId", source = "gameId")
+    @Mapping(target = "id.createdAt", source = "createdAt")
+    @Mapping(target = "game", ignore = true)
+    GameStatusEntity toGameStatusEntity(GameStatus gameStatus);
+
     default byte[] mapImage(MultipartFile image) {
         try {
             return image != null ? image.getBytes() : null;

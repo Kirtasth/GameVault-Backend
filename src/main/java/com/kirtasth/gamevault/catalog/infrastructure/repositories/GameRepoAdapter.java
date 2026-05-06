@@ -10,18 +10,20 @@ import com.kirtasth.gamevault.catalog.infrastructure.mappers.CatalogMapper;
 import com.kirtasth.gamevault.catalog.infrastructure.repositories.jpa.DeveloperRepository;
 import com.kirtasth.gamevault.catalog.infrastructure.repositories.jpa.GameRepository;
 import com.kirtasth.gamevault.catalog.infrastructure.specifications.GameEntitySpecification;
-import com.kirtasth.gamevault.common.infrastructure.PageMapper;
 import com.kirtasth.gamevault.common.domain.models.page.Page;
 import com.kirtasth.gamevault.common.domain.models.page.PageRequest;
+import com.kirtasth.gamevault.common.infrastructure.PageMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
+@Transactional
 public class GameRepoAdapter implements GameRepoPort {
 
     private final GameRepository gameRepository;
@@ -40,6 +42,7 @@ public class GameRepoAdapter implements GameRepoPort {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Game findById(Long id) throws GameNotFoundException {
         return gameRepository.findById(id).map(mapper::toGame).orElseThrow(
                 () -> new GameNotFoundException(id)
@@ -47,6 +50,7 @@ public class GameRepoAdapter implements GameRepoPort {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Game> findAll(PageRequest pageRequest, GameCriteria gameCriteria) {
         var pageable = this.pageMapper.toSpring(pageRequest);
 
@@ -59,6 +63,10 @@ public class GameRepoAdapter implements GameRepoPort {
                 this.gameEntitySpecification.releasedBefore(gameCriteria.toReleaseTime()),
                 this.gameEntitySpecification.containsAllGameTags(gameCriteria.gameTags())
         );
+
+        if (gameCriteria.onlyAvailable()) {
+            spec = spec.and(this.gameEntitySpecification.hasAvailableKeys(java.time.Instant.now()));
+        }
 
         var page = this.gameRepository.findAll(spec, pageable).map(mapper::toGame);
         return this.pageMapper.toDomain(page);
@@ -86,6 +94,7 @@ public class GameRepoAdapter implements GameRepoPort {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Game> findAllByDevId(Long developerId, PageRequest pageRequest, GameCriteria gameCriteria) {
         var devName = this.developerRepository.findById(developerId).orElseThrow(
                 () -> new DeveloperNotFoundException(developerId)).getName();
@@ -107,11 +116,32 @@ public class GameRepoAdapter implements GameRepoPort {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Game> findAllByIds(List<Long> gameIds, PageRequest pageRequest) {
         var pageable = this.pageMapper.toSpring(pageRequest);
 
         var page = this.gameRepository.findAllByIdIn(gameIds, pageable).map(mapper::toGame);
 
+        return this.pageMapper.toDomain(page);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Game> findAllByIds(List<Long> gameIds, PageRequest pageRequest, GameCriteria gameCriteria) {
+        var pageable = this.pageMapper.toSpring(pageRequest);
+
+        Specification<GameEntity> spec = Specification.allOf(
+                this.gameEntitySpecification.idsIn(gameIds),
+                this.gameEntitySpecification.containsTitle(gameCriteria.title()),
+                this.gameEntitySpecification.containsDeveloper(gameCriteria.developerName()),
+                this.gameEntitySpecification.priceGreaterOrEqual(gameCriteria.minPrice()),
+                this.gameEntitySpecification.priceLessOrEqual(gameCriteria.maxPrice()),
+                this.gameEntitySpecification.releasedAfter(gameCriteria.fromReleaseTime()),
+                this.gameEntitySpecification.releasedBefore(gameCriteria.toReleaseTime()),
+                this.gameEntitySpecification.containsAllGameTags(gameCriteria.gameTags())
+        );
+
+        var page = this.gameRepository.findAll(spec, pageable).map(mapper::toGame);
         return this.pageMapper.toDomain(page);
     }
 }

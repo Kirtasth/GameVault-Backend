@@ -25,10 +25,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JwtServiceAdapter implements JwtServicePort {
 
-    @Value("${spring.application.security.jwt.expiration}")
+    @Value("${spring.security.jwt.expiration}")
     private long jwtExpiration;
 
-    @Value("${spring.application.security.jwt.refresh-expiration}")
+    @Value("${spring.security.jwt.refresh-expiration}")
     private long jwtRefreshExpiration;
 
     private final JwtKeyGenerator jwtKeyGenerator;

@@ -1,9 +1,9 @@
 package com.kirtasth.gamevault.users.application.services;
 
+import com.kirtasth.gamevault.common.domain.ports.out.ImageStoragePort;
 import com.kirtasth.gamevault.users.domain.models.*;
 import com.kirtasth.gamevault.users.domain.ports.in.AuthServicePort;
 import com.kirtasth.gamevault.users.domain.ports.in.JwtServicePort;
-import com.kirtasth.gamevault.users.domain.ports.in.UserImageServicePort;
 import com.kirtasth.gamevault.users.domain.ports.in.UserServicePort;
 import com.kirtasth.gamevault.users.domain.ports.out.AuthProviderPort;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class AuthServiceAdapter implements AuthServicePort {
     private final PasswordEncoder passwordEncoder;
     private final UserServicePort userService;
     private final JwtServicePort jwtService;
-    private final UserImageServicePort userImageService;
+    private final ImageStoragePort userImageService;
 
     @Override
     public User registerUser(NewUser newUser) {
@@ -38,7 +38,7 @@ public class AuthServiceAdapter implements AuthServicePort {
             updatedUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
         }
 
-        var avatarUrl = userImageService.uploadAvatar(id, avatarImage);
+        var avatarUrl = userImageService.uploadAvatar(avatarImage, id);
 
         updatedUser.setAvatarUrl(avatarUrl);
 

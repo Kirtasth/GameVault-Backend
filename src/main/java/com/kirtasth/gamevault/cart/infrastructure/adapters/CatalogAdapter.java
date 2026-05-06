@@ -6,7 +6,7 @@ import com.kirtasth.gamevault.catalog.domain.ports.in.GameServicePort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("cartCatalogAdapter")
 @RequiredArgsConstructor
 public class CatalogAdapter implements CatalogPort {
 

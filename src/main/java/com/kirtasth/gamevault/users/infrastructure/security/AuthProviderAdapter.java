@@ -14,7 +14,6 @@ public class AuthProviderAdapter implements AuthProviderPort {
 
     @Override
     public Authentication authenticate(Authentication authentication) {
-
         return this.authenticationProvider.authenticate(authentication);
     }
 }

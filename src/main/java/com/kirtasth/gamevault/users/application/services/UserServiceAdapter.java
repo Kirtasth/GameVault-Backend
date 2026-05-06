@@ -3,11 +3,8 @@ package com.kirtasth.gamevault.users.application.services;
 import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
 import com.kirtasth.gamevault.common.domain.models.page.Page;
 import com.kirtasth.gamevault.common.domain.models.page.PageRequest;
-import com.kirtasth.gamevault.users.domain.models.NewUser;
-import com.kirtasth.gamevault.users.domain.models.Role;
-import com.kirtasth.gamevault.users.domain.models.UpdatedUser;
-import com.kirtasth.gamevault.users.domain.models.User;
-import com.kirtasth.gamevault.users.domain.models.UserCriteria;
+import com.kirtasth.gamevault.users.application.exception.UserNotFoundException;
+import com.kirtasth.gamevault.users.domain.models.*;
 import com.kirtasth.gamevault.users.domain.ports.in.UserServicePort;
 import com.kirtasth.gamevault.users.domain.ports.out.UserRepoPort;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +25,9 @@ public class UserServiceAdapter implements UserServicePort {
 
     @Override
     public User getUserByEmail(String email) {
-        return this.userRepo.findUserByEmail(email);
+        return this.userRepo.findUserByEmail(email).orElseThrow(
+                () -> new UserNotFoundException(email)
+        );
     }
 
     @Override
@@ -67,7 +66,7 @@ public class UserServiceAdapter implements UserServicePort {
         if (updatedUser.getEmail() != null) {
             user.setEmail(updatedUser.getEmail());
         }
-        if (updatedUser.getPassword() != null) {
+        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
             user.setPassword(updatedUser.getPassword());
         }
         if (updatedUser.getAvatarUrl() != null) {
@@ -102,7 +101,9 @@ public class UserServiceAdapter implements UserServicePort {
 
     @Override
     public Long getUserId(String email) {
-        return this.userRepo.findUserByEmail(email).getId();
+        return this.userRepo.findUserByEmail(email).orElseThrow(
+                () -> new UserNotFoundException(email)
+        ).getId();
     }
 
 }

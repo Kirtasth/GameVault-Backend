@@ -1,9 +1,9 @@
 package com.kirtasth.gamevault.users.infrastructure.repositories;
 
-import com.kirtasth.gamevault.common.infrastructure.PageMapper;
 import com.kirtasth.gamevault.common.domain.models.enums.RoleEnum;
 import com.kirtasth.gamevault.common.domain.models.page.Page;
 import com.kirtasth.gamevault.common.domain.models.page.PageRequest;
+import com.kirtasth.gamevault.common.infrastructure.PageMapper;
 import com.kirtasth.gamevault.users.application.exception.RoleAssignmentException;
 import com.kirtasth.gamevault.users.application.exception.RoleNotFoundException;
 import com.kirtasth.gamevault.users.application.exception.UserAlreadyRegisteredException;
@@ -40,17 +40,15 @@ public class UserRepoAdapter implements UserRepoPort {
     private final UserEntitySpecification userEntitySpecification;
 
     @Override
-    public User findUserById(Long id) throws UserNotFoundException {
+    public User findUserById(Long id) {
         return this.userRepository.findById(id).map(userMapper::toUser).orElseThrow(
                 () -> new UserNotFoundException(id.toString())
         );
     }
 
     @Override
-    public User findUserByEmail(String email) throws UserNotFoundException {
-        return this.userRepository.findByEmail(email).map(userMapper::toUser).orElseThrow(
-                () -> new UserNotFoundException(email)
-        );
+    public Optional<User> findUserByEmail(String email) {
+        return this.userRepository.findByEmail(email).map(userMapper::toUser);
     }
 
     @Override
@@ -81,14 +79,14 @@ public class UserRepoAdapter implements UserRepoPort {
     }
 
     @Override
-    public Role findRole(RoleEnum role) throws RoleNotFoundException {
+    public Role findRole(RoleEnum role) {
         return this.roleRepository.findByRole(role).map(this.userMapper::toRole).orElseThrow(
                 () -> new RoleNotFoundException(role)
         );
     }
 
     @Override
-    public User saveUser(User user) throws UserAlreadyRegisteredException {
+    public User saveUser(User user) {
         try {
             return this.userMapper.toUser(this.userRepository.save(this.userMapper.toUserEntity(user)));
         } catch (DataIntegrityViolationException e) {
@@ -97,7 +95,7 @@ public class UserRepoAdapter implements UserRepoPort {
     }
 
     @Override
-    public User addRolesToUser(Long id, List<RoleEnum> roleEnums) throws RoleNotFoundException, RoleAssignmentException, UserNotFoundException {
+    public User addRolesToUser(Long id, List<RoleEnum> roleEnums) {
         try {
 
             var roles = roleEnums.stream()

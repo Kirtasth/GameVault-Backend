@@ -3,6 +3,7 @@ package com.kirtasth.gamevault.catalog.infrastructure.specifications;
 import com.kirtasth.gamevault.catalog.infrastructure.dtos.entities.DeveloperEntity;
 import com.kirtasth.gamevault.catalog.infrastructure.dtos.entities.GameEntity;
 import com.kirtasth.gamevault.catalog.infrastructure.dtos.entities.GameTagEntity;
+import com.kirtasth.gamevault.checkout.infrastructure.dtos.entities.GameKeyEntity;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
@@ -91,5 +92,36 @@ public class GameEntitySpecification {
 
             return root.get("id").in(subquery);
         });
+    }
+
+    public Specification<GameEntity> idsIn(List<Long> gameIds) {
+        return (root, query, criteriaBuilder) -> {
+            if (gameIds == null || gameIds.isEmpty()) {
+                return criteriaBuilder.conjunction();
+            }
+            return root.get("id").in(gameIds);
+        };
+    }
+
+    public Specification<GameEntity> hasAvailableKeys(Instant now) {
+        return (root, query, criteriaBuilder) -> {
+            if (query == null) {
+                return criteriaBuilder.conjunction();
+            }
+            Subquery<Long> subquery = query.subquery(Long.class);
+            Root<GameKeyEntity> subRoot = subquery.from(GameKeyEntity.class);
+            subquery.select(subRoot.get("game").get("id"))
+                    .where(
+                            criteriaBuilder.and(
+                                    criteriaBuilder.equal(subRoot.get("game"), root),
+                                    criteriaBuilder.isNull(subRoot.get("purchasedByUserId")),
+                                    criteriaBuilder.or(
+                                            criteriaBuilder.isNull(subRoot.get("reservedByUserId")),
+                                            criteriaBuilder.lessThan(subRoot.get("reservedDeadline"), now)
+                                    )
+                            )
+                    );
+            return criteriaBuilder.exists(subquery);
+        };
     }
 }

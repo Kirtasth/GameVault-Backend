@@ -1,10 +1,6 @@
 package com.kirtasth.gamevault.cart.infrastructure.dtos.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.Getter;
+import lombok.*;
 
 import java.io.Serializable;
 

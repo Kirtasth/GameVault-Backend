@@ -13,6 +13,7 @@ public record GameCriteriaRequest(
         String developerName,
         List<String> gameTags,
         Instant fromReleaseTime,
-        Instant toReleaseTime
+        Instant toReleaseTime,
+        Boolean onlyAvailable
 ) {
 }
