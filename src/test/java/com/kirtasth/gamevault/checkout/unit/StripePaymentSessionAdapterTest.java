@@ -3,7 +3,7 @@ package com.kirtasth.gamevault.checkout.unit;
 import com.kirtasth.gamevault.cart.domain.models.CartItem;
 import com.kirtasth.gamevault.cart.domain.models.ShoppingCart;
 import com.kirtasth.gamevault.catalog.domain.models.Game;
-import com.kirtasth.gamevault.checkout.infrastructure.adapters.StripeSessionAdapter;
+import com.kirtasth.gamevault.checkout.infrastructure.adapters.StripePaymentSessionAdapter;
 import com.stripe.StripeClient;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
@@ -25,16 +25,16 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class StripeSessionAdapterTest {
+class StripePaymentSessionAdapterTest {
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private StripeClient stripeClient;
 
-    private StripeSessionAdapter stripeSessionAdapter;
+    private StripePaymentSessionAdapter stripePaymentSessionAdapter;
 
     @BeforeEach
     void setUp() {
-        stripeSessionAdapter = new StripeSessionAdapter(
+        stripePaymentSessionAdapter = new StripePaymentSessionAdapter(
                 stripeClient,
                 "http://success.url",
                 "http://cancel.url",
@@ -73,7 +73,7 @@ class StripeSessionAdapterTest {
         when(stripeClient.v1().checkout().sessions().create(any(SessionCreateParams.class))).thenReturn(session);
 
         // Act
-        String url = stripeSessionAdapter.createCheckoutSession(cart, games);
+        String url = stripePaymentSessionAdapter.createCheckoutSession(cart, games);
 
         // Assert
         assertEquals("http://stripe.url", url);
@@ -128,7 +128,7 @@ class StripeSessionAdapterTest {
         when(stripeClient.v1().checkout().sessions().create(any(SessionCreateParams.class))).thenReturn(session);
 
         // Act
-        stripeSessionAdapter.createCheckoutSession(cart, games);
+        stripePaymentSessionAdapter.createCheckoutSession(cart, games);
 
         // Assert
         verify(stripeClient.v1().checkout().sessions()).create(argThat((SessionCreateParams params) -> {

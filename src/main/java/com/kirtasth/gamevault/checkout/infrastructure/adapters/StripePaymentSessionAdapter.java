@@ -3,8 +3,8 @@ package com.kirtasth.gamevault.checkout.infrastructure.adapters;
 import com.kirtasth.gamevault.cart.domain.models.CartItem;
 import com.kirtasth.gamevault.cart.domain.models.ShoppingCart;
 import com.kirtasth.gamevault.catalog.domain.models.Game;
-import com.kirtasth.gamevault.checkout.application.exceptions.StripeIntegrationException;
-import com.kirtasth.gamevault.checkout.domain.ports.out.StripeSessionPort;
+import com.kirtasth.gamevault.checkout.application.exceptions.PaymentIntegrationException;
+import com.kirtasth.gamevault.checkout.domain.ports.out.PaymentSessionPort;
 import com.stripe.StripeClient;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
@@ -20,14 +20,14 @@ import java.util.Map;
 
 @Slf4j
 @Component
-public class StripeSessionAdapter implements StripeSessionPort {
+public class StripePaymentSessionAdapter implements PaymentSessionPort {
 
     private final StripeClient client;
     private final String successUrl;
     private final String cancelUrl;
     private final long expirationMinutes;
 
-    public StripeSessionAdapter(
+    public StripePaymentSessionAdapter(
             StripeClient client,
             @Value("${stripe.success.url}") String successUrl,
             @Value("${stripe.cancel.url}") String cancelUrl,
@@ -81,7 +81,7 @@ public class StripeSessionAdapter implements StripeSessionPort {
             Session session = client.v1().checkout().sessions().create(paramsBuilder.build());
             return session.getUrl();
         } catch (StripeException e) {
-            throw new StripeIntegrationException("Error creating Stripe checkout session: " + e.getMessage());
+            throw new PaymentIntegrationException("Error creating Stripe checkout session: " + e.getMessage());
         }
     }
 }

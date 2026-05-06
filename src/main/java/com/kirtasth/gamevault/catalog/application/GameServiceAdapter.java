@@ -10,11 +10,13 @@ import com.kirtasth.gamevault.common.domain.models.page.PageRequest;
 import com.kirtasth.gamevault.common.domain.ports.out.ImageStoragePort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class GameServiceAdapter implements GameServicePort {
 
     private final GameRepoPort gameRepo;
@@ -45,11 +47,13 @@ public class GameServiceAdapter implements GameServicePort {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Game findById(Long id) {
         return gameRepo.findById(id);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Game> listAll(PageRequest pageRequest, GameCriteria gameCriteria) {
         return gameRepo.findAll(pageRequest, gameCriteria);
     }
@@ -69,16 +73,19 @@ public class GameServiceAdapter implements GameServicePort {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Game> listDevGames(Long developerId, PageRequest pageRequest, GameCriteria gameCriteria) {
         return gameRepo.findAllByDevId(developerId, pageRequest, gameCriteria);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Game> listCustomGames(List<Long> gameIds, PageRequest pageRequest) {
         return gameRepo.findAllByIds(gameIds, pageRequest);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean isDeveloperOfGame(Long developerId, Long gameId) {
         var game = gameRepo.findById(gameId);
         return game.developerId().equals(developerId);

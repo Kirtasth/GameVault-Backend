@@ -17,11 +17,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
+@Transactional
 public class GameRepoAdapter implements GameRepoPort {
 
     private final GameRepository gameRepository;
@@ -40,6 +42,7 @@ public class GameRepoAdapter implements GameRepoPort {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Game findById(Long id) throws GameNotFoundException {
         return gameRepository.findById(id).map(mapper::toGame).orElseThrow(
                 () -> new GameNotFoundException(id)
@@ -47,6 +50,7 @@ public class GameRepoAdapter implements GameRepoPort {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Game> findAll(PageRequest pageRequest, GameCriteria gameCriteria) {
         var pageable = this.pageMapper.toSpring(pageRequest);
 
@@ -90,6 +94,7 @@ public class GameRepoAdapter implements GameRepoPort {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Game> findAllByDevId(Long developerId, PageRequest pageRequest, GameCriteria gameCriteria) {
         var devName = this.developerRepository.findById(developerId).orElseThrow(
                 () -> new DeveloperNotFoundException(developerId)).getName();
@@ -111,6 +116,7 @@ public class GameRepoAdapter implements GameRepoPort {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Game> findAllByIds(List<Long> gameIds, PageRequest pageRequest) {
         var pageable = this.pageMapper.toSpring(pageRequest);
 
@@ -120,6 +126,7 @@ public class GameRepoAdapter implements GameRepoPort {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Game> findAllByIds(List<Long> gameIds, PageRequest pageRequest, GameCriteria gameCriteria) {
         var pageable = this.pageMapper.toSpring(pageRequest);
 

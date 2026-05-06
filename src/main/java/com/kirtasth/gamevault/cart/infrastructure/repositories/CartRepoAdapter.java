@@ -12,11 +12,13 @@ import com.kirtasth.gamevault.cart.infrastructure.repositories.jpa.ShoppingCartR
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CartRepoAdapter implements CartRepoPort {
 
     private final ShoppingCartRepository shoppingCartRepository;
@@ -24,6 +26,7 @@ public class CartRepoAdapter implements CartRepoPort {
     private final CartMapper cartMapper;
 
     @Override
+    @Transactional
     public ShoppingCart save(ShoppingCart cart) {
         ShoppingCartEntity entity = cartMapper.toEntity(cart);
         try {
@@ -47,6 +50,7 @@ public class CartRepoAdapter implements CartRepoPort {
     }
 
     @Override
+    @Transactional
     public CartItem save(CartItem item) {
         return cartMapper.toDomain(cartItemRepository.save(cartMapper.toEntity(item)));
     }

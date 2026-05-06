@@ -12,9 +12,9 @@ import com.kirtasth.gamevault.checkout.application.CheckoutServiceAdapter;
 import com.kirtasth.gamevault.checkout.domain.models.GameKey;
 import com.kirtasth.gamevault.checkout.domain.ports.out.CatalogPort;
 import com.kirtasth.gamevault.checkout.domain.ports.out.GameKeyRepository;
-import com.kirtasth.gamevault.checkout.domain.ports.out.StripePort;
-import com.kirtasth.gamevault.checkout.domain.ports.out.StripeSessionPort;
-import com.kirtasth.gamevault.checkout.infrastructure.adapters.StripeAdapterFactory;
+import com.kirtasth.gamevault.checkout.domain.ports.out.PaymentEventHandler;
+import com.kirtasth.gamevault.checkout.domain.ports.out.PaymentSessionPort;
+import com.kirtasth.gamevault.checkout.infrastructure.adapters.PaymentWebhookAdapterFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,10 +41,10 @@ class CheckoutServiceAdapterTest {
     private CatalogPort catalogPort;
 
     @Mock
-    private StripeSessionPort stripeSessionPort;
+    private PaymentSessionPort paymentSessionPort;
 
     @Mock
-    private StripeAdapterFactory stripeAdapterFactory;
+    private PaymentWebhookAdapterFactory paymentWebhookAdapterFactory;
 
     @Mock
     private GameKeyRepository gameKeyRepository;
@@ -58,8 +59,8 @@ class CheckoutServiceAdapterTest {
         checkoutServiceAdapter = new CheckoutServiceAdapter(
                 cartServicePort,
                 catalogPort,
-                stripeSessionPort,
-                stripeAdapterFactory,
+                paymentSessionPort,
+                paymentWebhookAdapterFactory,
                 gameKeyRepository,
                 objectMapper,
                 30L
@@ -81,7 +82,7 @@ class CheckoutServiceAdapterTest {
         when(cartServicePort.getCart(userId)).thenReturn(cart);
         when(catalogPort.findGamesByIds(List.of(10L))).thenReturn(List.of(game));
         when(gameKeyRepository.findAvailableKeysByGameId(eq(10L), eq(1))).thenReturn(List.of(key));
-        when(stripeSessionPort.createCheckoutSession(eq(cart), any())).thenReturn("https://stripe.com/session");
+        when(paymentSessionPort.createCheckoutSession(eq(cart), any())).thenReturn("https://stripe.com/session");
 
         String url = checkoutServiceAdapter.createCheckoutSession(userId);
 
@@ -104,10 +105,11 @@ class CheckoutServiceAdapterTest {
     }
 
     @Test
-    void handleStripeEvent_ShouldCallAdapter_WhenAdapterExists() throws JsonProcessingException {
+    @SuppressWarnings("unchecked")
+    void handlePaymentWebhook_ShouldCallHandler_WhenHandlerExists() throws JsonProcessingException {
         // Arrange
         String payload = "{\"type\": \"checkout.session.completed\"}";
-        String sigHeader = "sig";
+        Map<String, String> headers = Map.of("Stripe-Signature", "sig");
         String eventType = "checkout.session.completed";
 
         JsonNode rootNode = mock(JsonNode.class);
@@ -116,21 +118,21 @@ class CheckoutServiceAdapterTest {
         when(rootNode.get("type")).thenReturn(typeNode);
         when(typeNode.asText()).thenReturn(eventType);
 
-        StripePort adapter = mock(StripePort.class);
-        when(stripeAdapterFactory.getAdapter(eventType)).thenReturn(Optional.of(adapter));
+        PaymentEventHandler handler = mock(PaymentEventHandler.class);
+        when(paymentWebhookAdapterFactory.getHandler(eventType)).thenReturn(Optional.of(handler));
 
         // Act
-        checkoutServiceAdapter.handleStripeEvent(payload, sigHeader);
+        checkoutServiceAdapter.handlePaymentWebhook(payload, headers);
 
         // Assert
-        verify(adapter).handleEvent(payload, sigHeader);
+        verify(handler).handleEvent(payload, headers);
     }
 
     @Test
-    void handleStripeEvent_ShouldNotThrow_WhenAdapterDoesNotExist() throws JsonProcessingException {
+    void handlePaymentWebhook_ShouldNotThrow_WhenHandlerDoesNotExist() throws JsonProcessingException {
         // Arrange
         String payload = "{\"type\": \"unknown.event\"}";
-        String sigHeader = "sig";
+        Map<String, String> headers = Collections.emptyMap();
         String eventType = "unknown.event";
 
         JsonNode rootNode = mock(JsonNode.class);
@@ -139,12 +141,12 @@ class CheckoutServiceAdapterTest {
         when(rootNode.get("type")).thenReturn(typeNode);
         when(typeNode.asText()).thenReturn(eventType);
 
-        when(stripeAdapterFactory.getAdapter(eventType)).thenReturn(Optional.empty());
+        when(paymentWebhookAdapterFactory.getHandler(eventType)).thenReturn(Optional.empty());
 
         // Act
-        checkoutServiceAdapter.handleStripeEvent(payload, sigHeader);
+        checkoutServiceAdapter.handlePaymentWebhook(payload, headers);
 
         // Assert
-        verifyNoInteractions(stripeSessionPort);
+        verifyNoInteractions(paymentSessionPort);
     }
 }

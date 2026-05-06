@@ -3,8 +3,11 @@ package com.kirtasth.gamevault.checkout.infrastructure.controllers;
 import com.kirtasth.gamevault.checkout.domain.ports.in.CheckoutUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -17,9 +20,10 @@ public class WebhookController {
     @PostMapping
     public ResponseEntity<Void> handleStripeEvent(
             @RequestBody String payload,
-            @RequestHeader("Stripe-Signature") String sigHeader
+            @RequestHeader HttpHeaders headers
     ) {
-        checkoutUseCase.handleStripeEvent(payload, sigHeader);
+        Map<String, String> headerMap = headers.toSingleValueMap();
+        checkoutUseCase.handlePaymentWebhook(payload, headerMap);
         return ResponseEntity.ok().build();
     }
 }

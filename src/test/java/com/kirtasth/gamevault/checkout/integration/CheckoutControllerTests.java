@@ -2,7 +2,7 @@ package com.kirtasth.gamevault.checkout.integration;
 
 import com.kirtasth.gamevault.cart.infrastructure.dtos.requests.AddItemPetitionRequest;
 import com.kirtasth.gamevault.catalog.infrastructure.dtos.requests.NewDeveloperRequest;
-import com.kirtasth.gamevault.checkout.domain.ports.out.StripeSessionPort;
+import com.kirtasth.gamevault.checkout.domain.ports.out.PaymentSessionPort;
 import com.kirtasth.gamevault.checkout.infrastructure.dtos.requests.UploadGameKeysRequest;
 import com.kirtasth.gamevault.common.BaseIntegrationTest;
 import com.kirtasth.gamevault.users.infrastructure.dtos.requests.CredentialsRequest;
@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CheckoutControllerTests extends BaseIntegrationTest {
 
     @MockitoBean
-    private StripeSessionPort stripeSessionPort;
+    private PaymentSessionPort paymentSessionPort;
 
     private String userToken;
     private Long gameId;
@@ -121,8 +121,8 @@ public class CheckoutControllerTests extends BaseIntegrationTest {
                         .content(objectMapper.writeValueAsString(addItemRequest)))
                 .andExpect(status().isOk());
 
-        // Mock StripeSessionPort
-        when(stripeSessionPort.createCheckoutSession(any(), any())).thenReturn("https://checkout.stripe.com/test");
+        // Mock PaymentSessionPort
+        when(paymentSessionPort.createCheckoutSession(any(), any())).thenReturn("https://checkout.stripe.com/test");
 
         // Test POST /api/v1/checkout
         mockMvc.perform(post("/api/v1/checkout")

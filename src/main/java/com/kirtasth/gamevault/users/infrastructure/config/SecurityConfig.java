@@ -83,7 +83,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/cart").access(
                                 permissionChecker.isAuthenticated())
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/cart/items/{itemId}").access(
-                                permissionChecker.isAuthenticated())
+                                permissionChecker.isCartItemOwner("itemId"))
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/cart").access(
                                 permissionChecker.isAuthenticated())
                         .requestMatchers(HttpMethod.GET, "/api/v1/wishlist").access(
@@ -94,9 +94,9 @@ public class SecurityConfig {
                                 permissionChecker.isAuthenticated())
                         .requestMatchers(HttpMethod.POST, "/api/v1/checkout/webhook").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/checkout/games/{gameId}/keys").access(
-                                permissionChecker.hasRole(RoleEnum.DEVELOPER))
+                                permissionChecker.isGameOwner("gameId"))
                         .requestMatchers(HttpMethod.GET, "/api/v1/checkout/games/{gameId}/keys").access(
-                                permissionChecker.hasRole(RoleEnum.DEVELOPER))
+                                permissionChecker.isGameOwner("gameId"))
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/checkout/game-keys/{keyId}/mark-as-used").access(
                                 permissionChecker.hasRole(RoleEnum.DEVELOPER))
                         .requestMatchers(HttpMethod.GET, "/api/v1/checkout/my-keys").access(

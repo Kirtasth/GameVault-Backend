@@ -5,6 +5,6 @@ import com.kirtasth.gamevault.catalog.domain.models.Game;
 
 import java.util.Map;
 
-public interface StripeSessionPort {
+public interface PaymentSessionPort {
     String createCheckoutSession(ShoppingCart cart, Map<Long, Game> games);
 }

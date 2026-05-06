@@ -4,7 +4,7 @@ import com.kirtasth.gamevault.cart.domain.models.CartItem;
 import com.kirtasth.gamevault.cart.domain.models.ShoppingCart;
 import com.kirtasth.gamevault.cart.domain.ports.in.CartServicePort;
 import com.kirtasth.gamevault.catalog.domain.models.Game;
-import com.kirtasth.gamevault.checkout.application.exceptions.StripeIntegrationException;
+import com.kirtasth.gamevault.checkout.application.exceptions.PaymentIntegrationException;
 import com.kirtasth.gamevault.checkout.domain.models.GameKey;
 import com.kirtasth.gamevault.checkout.domain.models.Order;
 import com.kirtasth.gamevault.checkout.domain.models.OrderItem;
@@ -12,7 +12,7 @@ import com.kirtasth.gamevault.checkout.domain.models.OrderStatus;
 import com.kirtasth.gamevault.checkout.domain.ports.out.CatalogPort;
 import com.kirtasth.gamevault.checkout.domain.ports.out.GameKeyRepository;
 import com.kirtasth.gamevault.checkout.domain.ports.out.OrderRepository;
-import com.kirtasth.gamevault.checkout.domain.ports.out.StripePort;
+import com.kirtasth.gamevault.checkout.domain.ports.out.PaymentEventHandler;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
 import com.stripe.model.EventDataObjectDeserializer;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CheckoutSessionCompletedAdapter implements StripePort {
+public class StripeCheckoutSessionCompletedAdapter implements PaymentEventHandler {
 
     private final CartServicePort cartServicePort;
     private final CatalogPort catalogPort;
@@ -52,7 +52,12 @@ public class CheckoutSessionCompletedAdapter implements StripePort {
 
     @Override
     @Transactional
-    public void handleEvent(String payload, String sigHeader) {
+    public void handleEvent(String payload, Map<String, String> headers) {
+        String sigHeader = getHeaderCaseInsensitive(headers, "Stripe-Signature");
+        if (sigHeader == null) {
+            log.error("Missing Stripe-Signature header");
+            throw new PaymentIntegrationException("Missing Stripe-Signature header");
+        }
         Event event = verifySignature(payload, sigHeader);
 
         log.info("Handling Stripe event: {}. Version: {}", event.getType(), event.getApiVersion());
@@ -83,8 +88,20 @@ public class CheckoutSessionCompletedAdapter implements StripePort {
             return Webhook.constructEvent(payload, sigHeader, webhookSecret);
         } catch (SignatureVerificationException e) {
             log.error("Stripe signature verification failed: {}", e.getMessage());
-            throw new StripeIntegrationException("Stripe webhook signature verification failed: " + e.getMessage());
+            throw new PaymentIntegrationException("Stripe webhook signature verification failed: " + e.getMessage());
         }
+    }
+
+    private String getHeaderCaseInsensitive(Map<String, String> headers, String key) {
+        if (headers == null || key == null) return null;
+        if (headers.containsKey(key)) return headers.get(key);
+        
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            if (key.equalsIgnoreCase(entry.getKey())) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
     private void handleCheckoutSessionCompleted(Session session) {

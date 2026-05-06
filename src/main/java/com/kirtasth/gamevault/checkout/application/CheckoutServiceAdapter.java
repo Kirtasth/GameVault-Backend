@@ -8,14 +8,13 @@ import com.kirtasth.gamevault.cart.domain.models.ShoppingCart;
 import com.kirtasth.gamevault.cart.domain.ports.in.CartServicePort;
 import com.kirtasth.gamevault.catalog.domain.models.Game;
 import com.kirtasth.gamevault.checkout.application.exceptions.KeysNotAvailableException;
-import com.kirtasth.gamevault.checkout.application.exceptions.StripeIntegrationException;
+import com.kirtasth.gamevault.checkout.application.exceptions.PaymentIntegrationException;
 import com.kirtasth.gamevault.checkout.domain.models.GameKey;
 import com.kirtasth.gamevault.checkout.domain.ports.in.CheckoutUseCase;
 import com.kirtasth.gamevault.checkout.domain.ports.out.CatalogPort;
 import com.kirtasth.gamevault.checkout.domain.ports.out.GameKeyRepository;
-import com.kirtasth.gamevault.checkout.domain.ports.out.StripeSessionPort;
-import com.kirtasth.gamevault.checkout.infrastructure.adapters.StripeAdapterFactory;
-import lombok.RequiredArgsConstructor;
+import com.kirtasth.gamevault.checkout.domain.ports.out.PaymentSessionPort;
+import com.kirtasth.gamevault.checkout.infrastructure.adapters.PaymentWebhookAdapterFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -35,8 +34,8 @@ public class CheckoutServiceAdapter implements CheckoutUseCase {
 
     private final CartServicePort cartServicePort;
     private final CatalogPort catalogPort;
-    private final StripeSessionPort stripeSessionPort;
-    private final StripeAdapterFactory stripeAdapterFactory;
+    private final PaymentSessionPort paymentSessionPort;
+    private final PaymentWebhookAdapterFactory paymentWebhookAdapterFactory;
     private final GameKeyRepository gameKeyRepository;
     private final ObjectMapper objectMapper;
     private final long expirationMinutes;
@@ -44,15 +43,15 @@ public class CheckoutServiceAdapter implements CheckoutUseCase {
     public CheckoutServiceAdapter(
             CartServicePort cartServicePort,
             CatalogPort catalogPort,
-            StripeSessionPort stripeSessionPort,
-            StripeAdapterFactory stripeAdapterFactory,
+            PaymentSessionPort paymentSessionPort,
+            PaymentWebhookAdapterFactory paymentWebhookAdapterFactory,
             GameKeyRepository gameKeyRepository,
             ObjectMapper objectMapper,
             @Value("${stripe.checkout.expiration-minutes}") long expirationMinutes) {
         this.cartServicePort = cartServicePort;
         this.catalogPort = catalogPort;
-        this.stripeSessionPort = stripeSessionPort;
-        this.stripeAdapterFactory = stripeAdapterFactory;
+        this.paymentSessionPort = paymentSessionPort;
+        this.paymentWebhookAdapterFactory = paymentWebhookAdapterFactory;
         this.gameKeyRepository = gameKeyRepository;
         this.objectMapper = objectMapper;
         this.expirationMinutes = expirationMinutes;
@@ -93,25 +92,25 @@ public class CheckoutServiceAdapter implements CheckoutUseCase {
 
         gameKeyRepository.saveAll(keysToReserve);
 
-        return stripeSessionPort.createCheckoutSession(cart, games);
+        return paymentSessionPort.createCheckoutSession(cart, games);
     }
 
     @Override
-    public void handleStripeEvent(String payload, String sigHeader) {
+    public void handlePaymentWebhook(String payload, Map<String, String> headers) {
         try {
             JsonNode rootNode = objectMapper.readTree(payload);
             String eventType = rootNode.get("type").asText();
 
-            log.info("Processing Stripe event: {}", eventType);
+            log.info("Processing payment event: {}", eventType);
 
-            stripeAdapterFactory.getAdapter(eventType)
+            paymentWebhookAdapterFactory.getHandler(eventType)
                     .ifPresentOrElse(
-                            adapter -> adapter.handleEvent(payload, sigHeader),
-                            () -> log.warn("No adapter found for event type: {}", eventType)
+                            handler -> handler.handleEvent(payload, headers),
+                            () -> log.warn("No handler found for event type: {}", eventType)
                     );
         } catch (Exception e) {
-            log.error("Error processing Stripe event: {}", e.getMessage(), e);
-            throw new StripeIntegrationException("Error processing Stripe event");
+            log.error("Error processing payment event: {}", e.getMessage(), e);
+            throw new PaymentIntegrationException("Error processing payment event");
         }
     }
 }
