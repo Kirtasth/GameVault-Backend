@@ -13,7 +13,7 @@ import java.io.ByteArrayInputStream;
 
 @Component
 @RequiredArgsConstructor
-@Profile("pre")
+@Profile({"pre", "test"})
 public class MinIOImageStorageAdapter implements ImageStoragePort {
 
     private final MinioClient client;

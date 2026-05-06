@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 @Configuration
-@Profile("pre")
+@Profile({"pre", "test"})
 public class MinIOConfig {
 
     @Value("${minio.url.internal}")
