@@ -35,6 +35,10 @@ RUN mkdir -p /app/jwt-keys && chown -R spring:spring /app
 # Copy the built JAR from the `builder` stage
 COPY --from=builder /build/target/*.jar app.jar
 
+# Set active profile (defaults to default if not provided)
+ARG SPRING_PROFILES_ACTIVE=default
+ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+
 # Set ownership to the non-root user
 USER spring:spring
 
