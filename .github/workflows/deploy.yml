@@ -1,47 +1,47 @@
-name: GameVault Backend Deploy Pipeline
-
-on:
-  push:
-    branches: [ pre ]
-
-jobs:
-  test:
-    runs-on: [self-hosted, local]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Setup JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-      - name: Cache Maven packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-      - name: Give execute permission to mvnw
-        run: chmod +x mvnw
-      - name: Build, test and package project
-        run: ./mvnw clean test
-
-  build_docker_image:
-    runs-on: [self-hosted, local]
-    needs: [ test ]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build the Docker Image
-        run: docker build -t gamevault-backend:latest .
-
-      - name: Deploy the Container
-        run: docker compose -f /infra/compose.yaml up -d --no-deps --force-recreate backend
-      - name: Refresh Frontend DNS
-        run: docker compose -f /infra/compose.yaml exec frontend nginx -s reload
-
-      - name: Clean up old unused images
-        run: docker image prune -f
+#name: GameVault Backend Deploy Pipeline
+#
+#on:
+#  push:
+#    branches: [ pre ]
+#
+#jobs:
+#  test:
+#    runs-on: [self-hosted, local]
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#        with:
+#          fetch-depth: 0
+#      - name: Setup JDK
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: '21'
+#          distribution: 'temurin'
+#      - name: Cache Maven packages
+#        uses: actions/cache@v4
+#        with:
+#          path: ~/.m2/repository
+#          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-maven-
+#      - name: Give execute permission to mvnw
+#        run: chmod +x mvnw
+#      - name: Build, test and package project
+#        run: ./mvnw clean test
+#
+#  build_docker_image:
+#    runs-on: [self-hosted, local]
+#    needs: [ test ]
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - name: Build the Docker Image
+#        run: docker build -t gamevault-backend:latest .
+#
+#      - name: Deploy the Container
+#        run: docker compose -f /infra/compose.yaml up -d --no-deps --force-recreate backend
+#      - name: Refresh Frontend DNS
+#        run: docker compose -f /infra/compose.yaml exec frontend nginx -s reload
+#
+#      - name: Clean up old unused images
+#        run: docker image prune -f
