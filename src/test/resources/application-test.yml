@@ -10,3 +10,20 @@ spring:
           create_namespaces: true
   flyway:
     enabled: true
+
+gamevault:
+  api:
+    url: ${GAMEVAULT_API_URL:http://localhost:8080}
+
+
+stripe:
+  api:
+    key: ${STRIPE_API_KEY:sk_test_12345678901234567890123456789012}
+  webhook:
+    secret: ${STRIPE_WEBHOOK_SECRET:sk_secret}
+  success:
+    url: ${STRIPE_SUCCESS_URL:http://localhost:8080/success}
+  cancel:
+    url: ${STRIPE_CANCEL_URL:http://localhost:8080/cancel}
+  checkout:
+    expiration-minutes: 30
