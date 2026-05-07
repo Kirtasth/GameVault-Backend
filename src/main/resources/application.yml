@@ -55,3 +55,7 @@ spring:
   config:
     activate:
       on-profile: pro
+
+imagekit:
+  private-key: ${IMAGEKIT_PRIVATE_KEY}
+  url-endpoint: ${IMAGEKIT_URL_ENDPOINT}
