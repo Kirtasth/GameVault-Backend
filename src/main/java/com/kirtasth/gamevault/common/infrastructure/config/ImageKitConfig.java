@@ -14,14 +14,10 @@ public class ImageKitConfig {
     @Value("${imagekit.private-key}")
     private String privateKey;
 
-    @Value("${imagekit.url-endpoint}")
-    private String urlEndpoint;
-
     @Bean
     public ImageKitClient imageKitClient() {
         return ImageKitOkHttpClient.builder()
                 .privateKey(privateKey)
-                .baseUrl(urlEndpoint)
                 .build();
     }
 }
